@@ -1,0 +1,27 @@
+Third-party notices for @pesuto/demotale
+======================================
+
+demotale itself is licensed under the GNU General Public License version 3 (see LICENSE).
+
+FFmpeg (via ffmpeg-static)
+--------------------------
+
+This package depends on `ffmpeg-static`, which downloads a platform-specific FFmpeg binary at
+install time. FFmpeg is free software licensed under the GNU General Public License version 3 or
+later (GPL-3.0-or-later), depending on how a given build was configured. demotale invokes that
+binary as a separate process; it does not link against FFmpeg as a library.
+
+- FFmpeg: https://ffmpeg.org/
+- ffmpeg-static: https://github.com/eugeneware/ffmpeg-static
+
+If you redistribute demotale together with the bundled FFmpeg binary, you must comply with the
+license terms of that binary. Prefer a system FFmpeg on your PATH when you already have one;
+demotale uses that first and only falls back to the bundled binary when PATH has none.
+
+Playwright
+----------
+
+`@playwright/test` is an Apache-2.0 dependency. Chromium downloaded by Playwright’s install step is
+subject to the Chromium / Playwright license terms published with that project.
+
+- https://github.com/microsoft/playwright

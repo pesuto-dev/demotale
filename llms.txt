@@ -1,0 +1,46 @@
+# demotale
+
+> Record narrated demo videos of a local web app. Playwright drives the click path, text overlays
+> explain each step, ffmpeg ships mp4/gif/subtitles/transcript. Built for humans and coding agents.
+> No microphone, no account, no upload.
+
+demotale is an npm CLI (`@pesuto/demotale`). A scenario is a Playwright test in `demo/*.demo.ts`.
+ Agents should run `npx demotale agent-guide` after install and follow that page — not invent steps
+ from memory.
+
+## When to use
+
+- Demo / screencast / walkthrough / README gif of a web UI on localhost
+- Keep the demo in git so CI can re-record when the UI changes
+
+## When not to use
+
+- Native desktop/mobile apps, voiceover narration, hosted recording SaaS
+
+## Install
+
+```bash
+npm i -D @pesuto/demotale
+npx demotale init --agent
+```
+
+Requires Node >= 22.12. Chromium and a bundled ffmpeg come with the package. If either is missing:
+`npx demotale setup`. Diagnose with `npx demotale doctor` (installs nothing itself).
+
+## Agent loop
+
+1. `npx demotale doctor --json`
+2. Point `demotale.config.ts` at the real app
+3. Write `demo/<thing>.demo.ts`
+4. `npx demotale check --json` — open the PNG frames
+5. `npx demotale record` once at the end
+
+## Docs
+
+- [README](https://github.com/pesuto-dev/demotale/blob/main/README.md)
+- [AGENTS.md](https://github.com/pesuto-dev/demotale/blob/main/AGENTS.md) — when/how for agents
+- [Getting started](https://github.com/pesuto-dev/demotale/blob/main/docs/getting-started.md)
+- [Writing a scenario](https://github.com/pesuto-dev/demotale/blob/main/docs/writing-a-scenario.md)
+- [Recipes](https://github.com/pesuto-dev/demotale/blob/main/docs/recipes.md)
+- [Traps](https://github.com/pesuto-dev/demotale/blob/main/docs/traps.md)
+- After install: `npx demotale agent-guide` (version-matched instructions)

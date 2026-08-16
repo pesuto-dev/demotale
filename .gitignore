@@ -1,0 +1,20 @@
+node_modules/
+dist/
+output/
+test-results/
+playwright-report/
+.env
+.auth/
+.DS_Store
+
+# Local tooling / caches (not part of the package)
+.angular/
+.claude/
+
+# Working documents: the Dutch plan and the unpublished README draft. Ignored from phase 0 on, so a
+# public repo can never carry them by accident.
+.plan/
+
+# npm pack output
+*.tgz
+pack/

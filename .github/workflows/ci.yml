@@ -1,0 +1,63 @@
+name: CI
+
+# The recording job is the smoke alarm for the whole package: it exercises the config loader, the
+# Playwright config, the overlay, the fixture, ffmpeg and the caption writers in one go. If the
+# example still records, demotale still works.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # Nothing beyond dist/ and templates/ may end up in the tarball, and the Dutch working
+      # documents in .plan/ least of all.
+      - name: Check what would be published
+        run: npm pack --dry-run
+
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: ffmpeg
+        run: ffmpeg -version | head -1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Record the example
+        run: npm run example
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: example-recording
+          path: |
+            examples/basic/output/*.mp4
+            examples/basic/output/*.gif
+            examples/basic/output/*.vtt
+            examples/basic/output/*.md
+          if-no-files-found: error
