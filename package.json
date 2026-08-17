@@ -1,6 +1,6 @@
 {
   "name": "@pesuto/demotale",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Record narrated demo videos of a local web app (Playwright + overlays + ffmpeg). Built for humans and coding agents.",
   "keywords": [
     "demo",
@@ -20,12 +20,16 @@
     "ai-agents"
   ],
   "license": "GPL-3.0-only",
-  "author": "Ben van den Berge",
+  "author": {
+    "name": "pesuto",
+    "email": "ben@pesuto.dev",
+    "url": "https://pesuto.nl"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pesuto-dev/demotale.git"
   },
-  "homepage": "https://github.com/pesuto-dev/demotale#readme",
+  "homepage": "https://pesuto.nl/#demotale",
   "bugs": "https://github.com/pesuto-dev/demotale/issues",
   "type": "module",
   "engines": {

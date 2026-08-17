@@ -3,6 +3,10 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## 0.1.2 — 2026-08-17
+
+Package metadata matches the brand: author is pesuto, homepage is the landing page.
+
 ## 0.1.1 — 2026-08-17
 
 A recording opened on the application for a beat, then the title card faded in over it. The overlay
