@@ -3,6 +3,12 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## 0.2.1 — 2026-08-17
+
+Doctor, join, render and setup now share one ffmpeg-missing hint. The optional `ffmpeg-static`
+source is no longer labelled “bundled”. `init --ci` copies the workflow through the same tree
+copy as the rest of init.
+
 ## 0.2.0 — 2026-08-17
 
 `init --ci` writes a GitHub Actions workflow that re-records the demo. It never overwrites one that
