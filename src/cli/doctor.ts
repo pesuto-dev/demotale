@@ -11,7 +11,7 @@ import path from 'node:path';
 
 import { looksLikeLogin } from '../check.js';
 import { findConfigFile, loadConfig, type ResolvedConfig } from '../config.js';
-import { ffmpegInstallHint, resolveFfmpeg } from '../ffmpeg.js';
+import { ffmpegMissingFix, ffmpegSourceDetail, resolveFfmpeg } from '../ffmpeg.js';
 import { resolvePlaywright } from '../playwright-resolve.js';
 import { configEcho, emitJson, jsonReport, type ProblemCode } from '../report.js';
 import { say, warn } from './ui.js';
@@ -68,14 +68,14 @@ function ffmpegCheck(): Check {
     return {
       status: 'ok',
       label: 'ffmpeg',
-      detail: resolved.source === 'path' ? 'on PATH' : 'bundled',
+      detail: ffmpegSourceDetail(resolved.source),
     };
   }
   return {
     status: 'warn',
     label: 'ffmpeg',
     detail: 'not available, so recordings stay as webm.',
-    fix: `${ffmpegInstallHint()}  # or: npm i -D ffmpeg-static`,
+    fix: ffmpegMissingFix(),
   };
 }
 

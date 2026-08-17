@@ -172,54 +172,43 @@ describe('init', () => {
     expect(pkg.scripts['demo']).toBe('my own thing');
     expect(pkg.scripts['demo:render']).toBe('demotale render');
   });
-});
 
-describe('init --ci', () => {
-  let root = '';
-  const workflow = path.join('.github', 'workflows', 'demotale.yml');
+  describe('--ci', () => {
+    const workflow = path.join('.github', 'workflows', 'demotale.yml');
 
-  beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), 'demotale-init-ci-'));
-    vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-  });
+    it('leaves the workflow alone without the flag', () => {
+      init(root);
+      expect(fs.existsSync(path.join(root, workflow))).toBe(false);
+    });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    fs.rmSync(root, { recursive: true, force: true });
-  });
+    it('writes a GitHub Actions workflow that re-records', () => {
+      const { written } = init(root, { ci: true });
+      expect(written).toContain(workflow);
 
-  it('leaves the workflow alone without the flag', () => {
-    init(root);
-    expect(fs.existsSync(path.join(root, workflow))).toBe(false);
-  });
+      const yaml = fs.readFileSync(path.join(root, workflow), 'utf8');
+      expect(yaml).toContain('npx demotale record');
+      expect(yaml).toContain('playwright install --with-deps chromium');
+      expect(yaml).toContain('if-no-files-found: error');
+      expect(yaml).toContain('demo/output/*');
+      expect(yaml).toContain('sudo apt-get update && sudo apt-get install -y ffmpeg');
+    });
 
-  it('writes a GitHub Actions workflow that re-records', () => {
-    const { written } = init(root, { ci: true });
-    expect(written).toContain(workflow);
+    it('never overwrites a workflow that is already there', () => {
+      fs.mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
+      fs.writeFileSync(path.join(root, workflow), 'mine, and hard won\n');
 
-    const yaml = fs.readFileSync(path.join(root, workflow), 'utf8');
-    expect(yaml).toContain('npx demotale record');
-    expect(yaml).toContain('playwright install --with-deps chromium');
-    expect(yaml).toContain('if-no-files-found: error');
-    expect(yaml).toContain('demo/output/*');
-    expect(yaml).toContain('sudo apt-get update && sudo apt-get install -y ffmpeg');
-  });
+      const { written, skipped } = init(root, { ci: true });
+      expect(skipped).toContain(workflow);
+      expect(written).not.toContain(workflow);
+      expect(fs.readFileSync(path.join(root, workflow), 'utf8')).toBe('mine, and hard won\n');
+    });
 
-  it('never overwrites a workflow that is already there', () => {
-    fs.mkdirSync(path.join(root, '.github', 'workflows'), { recursive: true });
-    fs.writeFileSync(path.join(root, workflow), 'mine, and hard won\n');
-
-    const { written, skipped } = init(root, { ci: true });
-    expect(skipped).toContain(workflow);
-    expect(written).not.toContain(workflow);
-    expect(fs.readFileSync(path.join(root, workflow), 'utf8')).toBe('mine, and hard won\n');
-  });
-
-  it('does not stack a second copy on a second run', () => {
-    init(root, { ci: true });
-    const first = fs.readFileSync(path.join(root, workflow), 'utf8');
-    const { skipped } = init(root, { ci: true });
-    expect(skipped).toContain(workflow);
-    expect(fs.readFileSync(path.join(root, workflow), 'utf8')).toBe(first);
+    it('does not stack a second copy on a second run', () => {
+      init(root, { ci: true });
+      const first = fs.readFileSync(path.join(root, workflow), 'utf8');
+      const { skipped } = init(root, { ci: true });
+      expect(skipped).toContain(workflow);
+      expect(fs.readFileSync(path.join(root, workflow), 'utf8')).toBe(first);
+    });
   });
 });

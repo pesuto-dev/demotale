@@ -27,11 +27,6 @@ for (const label of ['ffmpeg', 'chromium', 'playwright']) {
   }
 }
 
-if (by.ffmpeg.detail !== 'bundled' && by.ffmpeg.detail !== 'on PATH') {
-  console.error('unexpected ffmpeg detail', by.ffmpeg);
-  process.exit(1);
-}
-
 // This image installs ffmpeg with apt, matching what CI has to do on GitHub-hosted Ubuntu.
 if (by.ffmpeg.detail !== 'on PATH') {
   console.error('expected ffmpeg on PATH in the smoke image, got', by.ffmpeg.detail);

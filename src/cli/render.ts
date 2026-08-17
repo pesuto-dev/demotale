@@ -6,7 +6,8 @@
  * everything except ffmpeg should not go red over a file format.
  */
 import { loadConfig } from '../config.js';
-import { ffmpegInstallHint, render } from '../render.js';
+import { ffmpegMissingFix } from '../ffmpeg.js';
+import { render } from '../render.js';
 import { emitJson, jsonReport, type Problem } from '../report.js';
 import { megabytes, relative, say, warn } from './ui.js';
 
@@ -54,7 +55,7 @@ export async function runRender(
         {
           code: 'missing-ffmpeg',
           message: 'ffmpeg is not available, so the recordings stay as webm.',
-          fix: `npx demotale setup  # or: ${ffmpegInstallHint()}`,
+          fix: ffmpegMissingFix(),
         },
       ],
       payload,
@@ -80,7 +81,7 @@ export async function renderCommand(root = process.cwd(), json = false): Promise
   if (payload.missingFfmpeg) {
     warn('demotale: ffmpeg is not available, so the recordings stay as webm:');
     for (const recording of payload.recordings) warn(`  ${relative(recording.webm, root)}`);
-    warn(`Run "npx demotale setup", or install a system build with: ${ffmpegInstallHint()}`);
+    warn(`Install with: ${ffmpegMissingFix()}`);
     return 0;
   }
 

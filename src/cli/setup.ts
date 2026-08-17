@@ -7,7 +7,7 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 
-import { ffmpegInstallHint, resolveFfmpeg } from '../ffmpeg.js';
+import { ffmpegMissingFix, resolveFfmpeg } from '../ffmpeg.js';
 import { resolvePlaywright } from '../playwright-resolve.js';
 import { say, UserFacingError, warn } from './ui.js';
 
@@ -46,15 +46,21 @@ export function setupCommand(root = process.cwd()): number {
   const ffmpeg = resolveFfmpeg();
   if (ffmpeg === undefined) {
     warn('demotale: ffmpeg is not available, so recordings will stay as webm.');
-    warn(`Install a system build with: ${ffmpegInstallHint()}`);
-    warn('Or add a bundled binary with: npm i -D ffmpeg-static');
+    warn(`Install with: ${ffmpegMissingFix()}`);
     return 1;
   }
 
-  say(
-    ffmpeg.source === 'path'
-      ? 'demotale: ffmpeg is on PATH.'
-      : 'demotale: ffmpeg is available (ffmpeg-static in this project).',
-  );
+  switch (ffmpeg.source) {
+    case 'path':
+      say('demotale: ffmpeg is on PATH.');
+      break;
+    case 'ffmpeg-static':
+      say('demotale: ffmpeg is available (ffmpeg-static in this project).');
+      break;
+    default: {
+      const _exhaustive: never = ffmpeg.source;
+      return _exhaustive;
+    }
+  }
   return 0;
 }

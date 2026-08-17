@@ -1,8 +1,8 @@
 /**
  * `demotale join` — two parts into one video, without re-encoding.
  */
+import { ffmpegMissingFix, hasFfmpeg } from '../ffmpeg.js';
 import { join } from '../join.js';
-import { hasFfmpeg, ffmpegInstallHint } from '../render.js';
 import { megabytes, relative, say, UserFacingError } from './ui.js';
 
 export function joinCommand(positional: string[], root = process.cwd()): number {
@@ -14,7 +14,7 @@ export function joinCommand(positional: string[], root = process.cwd()): number 
   if (!hasFfmpeg()) {
     throw new UserFacingError(
       'demotale: joining needs ffmpeg, and it is not available.',
-      `Run "npx demotale setup", or install a system build with: ${ffmpegInstallHint()}`,
+      ffmpegMissingFix(),
     );
   }
 

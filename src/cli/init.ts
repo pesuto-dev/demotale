@@ -13,7 +13,7 @@ import { agentsBlock, AGENTS_MARKER } from '../agent-guide.js';
 import { say, UserFacingError } from './ui.js';
 
 const TEMPLATE_DIR = fileURLToPath(new URL('../../templates/init', import.meta.url));
-const CI_WORKFLOW = fileURLToPath(new URL('../../templates/ci/demotale.yml', import.meta.url));
+const CI_DIR = fileURLToPath(new URL('../../templates/ci', import.meta.url));
 
 /** Written into .gitignore, with the reason, because two of these are not obvious. */
 const IGNORE_LINES = [
@@ -114,31 +114,6 @@ function updateAgentsFile(root: string, result: InitResult): void {
   result.written.push(existing === '' ? 'AGENTS.md' : 'AGENTS.md (five lines appended)');
 }
 
-/**
- * Drops a GitHub Actions workflow that re-records the demo. Same rule as everything else init
- * writes: never overwrite. A second run in a project that already has one is usually a mistype.
- */
-function writeCiWorkflow(root: string, result: InitResult): void {
-  const target = path.join(root, '.github', 'workflows', 'demotale.yml');
-  const shown = path.relative(root, target);
-
-  if (fs.existsSync(target)) {
-    result.skipped.push(shown);
-    return;
-  }
-
-  if (!fs.existsSync(CI_WORKFLOW)) {
-    throw new UserFacingError(
-      `demotale: the CI workflow template is missing from the installed package (${CI_WORKFLOW}).`,
-      'Reinstall @pesuto/demotale.',
-    );
-  }
-
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(CI_WORKFLOW, target);
-  result.written.push(shown);
-}
-
 export function init(root = process.cwd(), options: { agent?: boolean; ci?: boolean } = {}): InitResult {
   if (!fs.existsSync(TEMPLATE_DIR)) {
     throw new UserFacingError(
@@ -152,7 +127,15 @@ export function init(root = process.cwd(), options: { agent?: boolean; ci?: bool
   updateGitignore(root, result);
   updatePackageScripts(root, result);
   if (options.agent === true) updateAgentsFile(root, result);
-  if (options.ci === true) writeCiWorkflow(root, result);
+  if (options.ci === true) {
+    if (!fs.existsSync(CI_DIR)) {
+      throw new UserFacingError(
+        `demotale: the CI workflow template is missing from the installed package (${CI_DIR}).`,
+        'Reinstall @pesuto/demotale.',
+      );
+    }
+    copyTree(CI_DIR, root, result, root);
+  }
 
   for (const file of result.written) say(`wrote    ${file}`);
   for (const file of result.skipped) say(`kept     ${file} (already there)`);
