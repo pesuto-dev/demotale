@@ -8,7 +8,7 @@ The scenario is a file in your repo. Record it locally, or let CI run the same c
 changes, so the demo does not go stale the first time someone moves a button.
 
 <!-- Made by demotale from examples/basic, which CI records on every push. -->
-![A demo recorded by demotale](https://cdn.jsdelivr.net/gh/pesuto-dev/demotale@main/docs/media/example.gif)
+![A demo recorded by demotale](https://cdn.jsdelivr.net/gh/pesuto-dev/demotale@v0.1.1/docs/media/example.gif)
 
 That gif was not screen-captured. It is `examples/basic/demo/parcel-desk.demo.ts`, recorded by this
 package — the same path CI runs on every push.
