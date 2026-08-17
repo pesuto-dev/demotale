@@ -84,6 +84,7 @@ already there):
   with: { node-version: 22 }
 - run: npm ci
 - run: npx playwright install --with-deps chromium
+- run: sudo apt-get update && sudo apt-get install -y ffmpeg
 - run: npx demotale record
 - uses: actions/upload-artifact@v4
   with:
@@ -93,9 +94,9 @@ already there):
 
 Three things to know. `@pesuto/demotale` already depends on Playwright; `--with-deps` is for the OS
 libraries Chromium needs on Linux runners (the browser binary itself usually arrived at `npm ci` via
-postinstall). GitHub's Ubuntu runners ship ffmpeg, so there is nothing extra for that. And a
-recording that fails is a build that goes red, which is the point: it means the click path no longer
-matches the application, and the video would have been wrong.
+postinstall). GitHub-hosted Ubuntu does not ship ffmpeg; without it the recording stays a webm.
+And a recording that fails is a build that goes red, which is the point: it means the click path no
+longer matches the application, and the video would have been wrong.
 
 ## A gif for your README
 

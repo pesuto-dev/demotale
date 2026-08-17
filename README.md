@@ -164,13 +164,15 @@ that is already there:
 
 ```yaml
 - run: npx playwright install --with-deps chromium
+- run: sudo apt-get update && sudo apt-get install -y ffmpeg
 - run: npx demotale record
 - uses: actions/upload-artifact@v4
   with: { name: demo, path: demo/output/* }
 ```
 
 `--with-deps` installs the OS libraries Chromium needs on Linux runners. The package postinstall
-already downloads the browser itself; on GitHub-hosted Ubuntu, system ffmpeg is usually present too.
+already downloads the browser itself. GitHub-hosted Ubuntu does not ship ffmpeg; install it in the
+job (`sudo apt-get install -y ffmpeg`) or the recording stays a webm.
 
 ## Commands
 

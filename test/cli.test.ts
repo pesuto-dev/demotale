@@ -202,7 +202,7 @@ describe('init --ci', () => {
     expect(yaml).toContain('playwright install --with-deps chromium');
     expect(yaml).toContain('if-no-files-found: error');
     expect(yaml).toContain('demo/output/*');
-    expect(yaml).toMatch(/ffmpeg/i);
+    expect(yaml).toContain('sudo apt-get update && sudo apt-get install -y ffmpeg');
   });
 
   it('never overwrites a workflow that is already there', () => {

@@ -43,8 +43,10 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      - name: ffmpeg
-        run: ffmpeg -version | head -1
+      # GitHub-hosted Ubuntu does not ship ffmpeg. Without it the recording still runs and
+      # leaves a webm, and the upload below would then find nothing.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium

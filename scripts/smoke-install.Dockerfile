@@ -2,7 +2,7 @@
 # Not a product image — only used by scripts/docker-smoke.sh.
 FROM node:22-bookworm
 
-# System ffmpeg, as on GitHub-hosted Ubuntu. The pack no longer ships ffmpeg-static.
+# System ffmpeg. GitHub-hosted Ubuntu does not ship it; CI installs it the same way.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
   && rm -rf /var/lib/apt/lists/*

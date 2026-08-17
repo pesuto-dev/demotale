@@ -6,7 +6,8 @@ Notable changes, newest first. This project follows [semantic versioning](https:
 ## 0.2.0 — 2026-08-17
 
 `init --ci` writes a GitHub Actions workflow that re-records the demo. It never overwrites one that
-is already there.
+is already there. The workflow installs ffmpeg: GitHub-hosted Ubuntu does not ship it, and without
+it a recording stays a webm.
 
 The package is now Apache-2.0. ffmpeg-static is no longer a required dependency: recordings use
 ffmpeg on PATH when present, or an optional `ffmpeg-static` install, and still leave a webm when

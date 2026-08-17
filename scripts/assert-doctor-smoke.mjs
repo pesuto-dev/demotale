@@ -32,7 +32,7 @@ if (by.ffmpeg.detail !== 'bundled' && by.ffmpeg.detail !== 'on PATH') {
   process.exit(1);
 }
 
-// This image installs ffmpeg with apt, matching GitHub-hosted Ubuntu.
+// This image installs ffmpeg with apt, matching what CI has to do on GitHub-hosted Ubuntu.
 if (by.ffmpeg.detail !== 'on PATH') {
   console.error('expected ffmpeg on PATH in the smoke image, got', by.ffmpeg.detail);
   process.exit(1);

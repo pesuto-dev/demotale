@@ -24,7 +24,10 @@ jobs:
       # usually arrived at npm ci via demotale's postinstall.
       - run: npx playwright install --with-deps chromium
 
-      # GitHub's Ubuntu runners already have ffmpeg. Nothing extra for that.
+      # GitHub-hosted Ubuntu does not ship ffmpeg. Without it the recording still runs and leaves
+      # a webm, and this job would then have nothing to upload.
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - run: npx demotale record
 
       - uses: actions/upload-artifact@v4
