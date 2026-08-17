@@ -75,7 +75,7 @@ function ffmpegCheck(): Check {
     status: 'warn',
     label: 'ffmpeg',
     detail: 'not available, so recordings stay as webm.',
-    fix: `npx demotale setup  # or: ${ffmpegInstallHint()}`,
+    fix: `${ffmpegInstallHint()}  # or: npm i -D ffmpeg-static`,
   };
 }
 

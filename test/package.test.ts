@@ -39,9 +39,9 @@ describe('package shape', () => {
     for (const entry of entries) expect(entry).toMatch(/^(\.\/)?dist\//);
   });
 
-  it('ships Playwright and ffmpeg-static as dependencies, not peers', () => {
+  it('ships Playwright as a dependency, not a peer, and does not require ffmpeg-static', () => {
     expect(pkg.dependencies?.['@playwright/test']).toBeTruthy();
-    expect(pkg.dependencies?.['ffmpeg-static']).toBeTruthy();
+    expect(pkg.dependencies?.['ffmpeg-static']).toBeUndefined();
     expect(pkg.peerDependencies?.['@playwright/test']).toBeUndefined();
     expect(pkg.scripts?.postinstall).toContain('postinstall.mjs');
   });

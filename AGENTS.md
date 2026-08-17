@@ -20,9 +20,9 @@ npx demotale init --agent
 npx demotale doctor
 ```
 
-That install pulls Playwright, Chromium (postinstall), and a bundled ffmpeg fallback. Needs Node
-22.12+. If Chromium or ffmpeg is missing (for example `npm i --ignore-scripts`), run
-`npx demotale setup`.
+That install pulls Playwright and Chromium (postinstall). Needs Node 22.12+. Put ffmpeg on PATH
+(`brew install ffmpeg`), or `npm i -D ffmpeg-static`. If Chromium is missing (for example
+`npm i --ignore-scripts`), run `npx demotale setup`.
 
 ## How to write the demo
 

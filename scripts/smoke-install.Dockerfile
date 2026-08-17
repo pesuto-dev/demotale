@@ -2,11 +2,10 @@
 # Not a product image — only used by scripts/docker-smoke.sh.
 FROM node:22-bookworm
 
-# No system ffmpeg on purpose: the pack must supply ffmpeg-static.
+# System ffmpeg, as on GitHub-hosted Ubuntu. The pack no longer ships ffmpeg-static.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && if command -v ffmpeg >/dev/null 2>&1; then echo "ffmpeg must not be on PATH" >&2; exit 1; fi
+  && apt-get install -y --no-install-recommends ca-certificates ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /smoke
 

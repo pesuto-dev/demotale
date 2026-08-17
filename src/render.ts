@@ -7,8 +7,8 @@
  * for itself what to call the directory it drops the video in.
  *
  * Missing ffmpeg is not an error. The webm stays where it is and plays in any browser; the caller
- * gets told what is missing and how to install it. Prefer system ffmpeg, then the binary that ships
- * with demotale via ffmpeg-static.
+ * gets told what is missing and how to install it. Prefer system ffmpeg, then `ffmpeg-static` if
+ * the project installed it.
  */
 import fs from 'node:fs';
 import path from 'node:path';

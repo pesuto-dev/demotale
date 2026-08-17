@@ -24,8 +24,9 @@ npm i -D @pesuto/demotale
 npx demotale init --agent
 ```
 
-Requires Node >= 22.12. Chromium and a bundled ffmpeg come with the package. If either is missing:
-`npx demotale setup`. Diagnose with `npx demotale doctor` (installs nothing itself).
+Requires Node >= 22.12. Chromium comes with the package. Put ffmpeg on PATH, or
+`npm i -D ffmpeg-static`. If Chromium is missing: `npx demotale setup`. Diagnose with
+`npx demotale doctor` (installs nothing itself).
 
 ## Agent loop
 

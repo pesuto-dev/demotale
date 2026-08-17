@@ -1,11 +1,11 @@
 <p>
-  <a href="https://pesuto.nl/">
+  <a href="https://pesuto.dev/">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://pesuto.nl/assets/logo/lockup-horizontal-paper.svg" />
-      <img src="https://pesuto.nl/assets/logo/lockup-horizontal-ink.svg" alt="pesuto" width="128" height="32" />
+      <source media="(prefers-color-scheme: dark)" srcset="https://pesuto.dev/assets/logo/lockup-horizontal-paper.svg" />
+      <img src="https://pesuto.dev/assets/logo/lockup-horizontal-ink.svg" alt="pesuto" width="128" height="32" />
     </picture>
   </a><br />
-  <a href="https://pesuto.nl/">a pesuto tool</a>
+  <a href="https://pesuto.dev/">a pesuto tool</a>
 </p>
 
 # demotale
@@ -30,8 +30,8 @@ package — the same path CI runs on every push.
   command instead of another afternoon of re-recording.
 - **In git, re-recorded by CI.** Same scenario, same `demotale record`. The demo stays current
   without a hand-filmed remake.
-- **Runs on your machine, free.** Playwright, Chromium and ffmpeg come with the package. No account,
-  no upload, no service.
+- **Runs on your machine, free.** Playwright and Chromium come with the package. ffmpeg is a
+  system install, or `ffmpeg-static` if you add it. No account, no upload, no service.
 - **Honest by default.** `note()` puts "seeded data, no real customer" on screen and keeps it there,
   and `redact` guarantees an element is never in frame. Both exist so the video is one you dare show
   a customer.
@@ -43,9 +43,10 @@ npm i -D @pesuto/demotale
 npx demotale init --agent
 ```
 
-Needs Node 22.12 or later. That install downloads Chromium (postinstall) and a bundled ffmpeg
-fallback for macOS, Linux and Windows. A system ffmpeg on your PATH is used first when present.
-Without any ffmpeg the recording still happens and you keep the webm; you just do not get an mp4.
+Needs Node 22.12 or later. That install downloads Chromium (postinstall). A system ffmpeg on your
+PATH is used when present (`brew install ffmpeg`, `apt install ffmpeg`, `winget install ffmpeg`).
+You can also add a bundled binary with `npm i -D ffmpeg-static`. Without any ffmpeg the recording
+still happens and you keep the webm; you just do not get an mp4.
 
 If `npm i` ran with `--ignore-scripts`, or doctor reports a missing browser: `npx demotale setup`.
 
@@ -173,7 +174,7 @@ already downloads the browser itself; on GitHub-hosted Ubuntu, system ffmpeg is 
 | --- | --- |
 | `demotale init` | Config, an example scenario, gitignore lines and npm scripts. Never overwrites. `--agent` also points AGENTS.md at the guide |
 | `demotale agent-guide` | Print the one page of instructions for whatever writes the scenarios |
-| `demotale setup` | Download Chromium (and verify ffmpeg) when postinstall was skipped |
+| `demotale setup` | Download Chromium when postinstall was skipped, and say whether ffmpeg is available |
 | `demotale check [file]` | Play the click path without filming it. A frame per subtitle, and what the page held when a locator missed |
 | `demotale record [file]` | Record and render. `--headed`, `--speed 1.4`, `--port 3100`, `--base-url <url>` |
 | `demotale render` | Re-render what was recorded |
@@ -201,7 +202,7 @@ no upload. Everything happens on your machine.
 
 ## License
 
-GPL-3.0 © Ben van den Berge. The optional bundled FFmpeg binary (via `ffmpeg-static`) is also GPL;
-see [NOTICE](NOTICE).
+Apache-2.0 © Ben van den Berge. See [NOTICE](NOTICE) for third-party notices. A bundled FFmpeg
+binary from `ffmpeg-static` (if you install that yourself) is GPL.
 
 The Pesuto name and logo are not covered by the license.

@@ -47,14 +47,14 @@ export function setupCommand(root = process.cwd()): number {
   if (ffmpeg === undefined) {
     warn('demotale: ffmpeg is not available, so recordings will stay as webm.');
     warn(`Install a system build with: ${ffmpegInstallHint()}`);
-    warn('Or reinstall demotale so the bundled ffmpeg-static binary is present.');
+    warn('Or add a bundled binary with: npm i -D ffmpeg-static');
     return 1;
   }
 
   say(
     ffmpeg.source === 'path'
       ? 'demotale: ffmpeg is on PATH.'
-      : 'demotale: ffmpeg is available (bundled with the package).',
+      : 'demotale: ffmpeg is available (ffmpeg-static in this project).',
   );
   return 0;
 }

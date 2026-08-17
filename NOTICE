@@ -1,27 +1,37 @@
-Third-party notices for @pesuto/demotale
-======================================
+demotale
+Copyright 2026 Ben van den Berge
 
-demotale itself is licensed under the GNU General Public License version 3 (see LICENSE).
+Licensed under the Apache License, Version 2.0.
+http://www.apache.org/licenses/LICENSE-2.0
 
-FFmpeg (via ffmpeg-static)
---------------------------
+The Pesuto name and logo are not licensed under Apache-2.0. You may fork and
+redistribute the software; you may not use the Pesuto or demotale names or
+logos to imply you are the official source, except to describe origin
+("based on demotale").
 
-This package depends on `ffmpeg-static`, which downloads a platform-specific FFmpeg binary at
-install time. FFmpeg is free software licensed under the GNU General Public License version 3 or
-later (GPL-3.0-or-later), depending on how a given build was configured. demotale invokes that
-binary as a separate process; it does not link against FFmpeg as a library.
+Third-party notices
+===================
+
+FFmpeg (optional, via ffmpeg-static)
+------------------------------------
+
+demotale prefers a system FFmpeg on PATH. If you install `ffmpeg-static` yourself,
+that package downloads a platform-specific FFmpeg binary licensed under
+GPL-3.0-or-later (depending on how a given build was configured). demotale
+invokes that binary as a separate process; it does not link against FFmpeg as a
+library.
 
 - FFmpeg: https://ffmpeg.org/
 - ffmpeg-static: https://github.com/eugeneware/ffmpeg-static
 
-If you redistribute demotale together with the bundled FFmpeg binary, you must comply with the
-license terms of that binary. Prefer a system FFmpeg on your PATH when you already have one;
-demotale uses that first and only falls back to the bundled binary when PATH has none.
+If you redistribute demotale together with a bundled FFmpeg binary, you must
+comply with the license terms of that binary.
 
 Playwright
 ----------
 
-`@playwright/test` is an Apache-2.0 dependency. Chromium downloaded by Playwright’s install step is
-subject to the Chromium / Playwright license terms published with that project.
+`@playwright/test` is an Apache-2.0 dependency. Chromium downloaded by
+Playwright’s install step is subject to the Chromium / Playwright license terms
+published with that project.
 
 - https://github.com/microsoft/playwright

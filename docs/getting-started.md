@@ -8,9 +8,9 @@ From nothing to a video, in the order it actually happens.
   which is what makes `demotale.config.ts` work.
 - An application you can start locally.
 
-Playwright, Chromium and a bundled ffmpeg come with `@pesuto/demotale`. A system ffmpeg on your PATH
-(`brew install ffmpeg`, `apt install ffmpeg`, `winget install ffmpeg`) is used first when present.
-Without any ffmpeg a recording still runs and leaves you a webm.
+Playwright and Chromium come with `@pesuto/demotale`. Put ffmpeg on PATH
+(`brew install ffmpeg`, `apt install ffmpeg`, `winget install ffmpeg`), or add
+`npm i -D ffmpeg-static`. Without any ffmpeg a recording still runs and leaves you a webm.
 
 ## Install
 
@@ -56,8 +56,8 @@ npx demotale doctor
 ```
 
 Ten seconds, one line per thing, and a sentence for anything that is missing. Worth running before
-the first recording rather than after twenty minutes of one. It installs nothing; when Chromium or
-ffmpeg is missing it names `npx demotale setup`.
+the first recording rather than after twenty minutes of one. It installs nothing. Missing Chromium
+is `npx demotale setup`. Missing ffmpeg is a system install, or `npm i -D ffmpeg-static`.
 
 ## Record
 

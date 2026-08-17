@@ -56,5 +56,5 @@ Please include what you would want if you were fixing it:
 
 ## License
 
-By contributing you agree that your contribution is licensed under the GPL-3.0 license, the same as
-the rest of the project.
+By contributing you agree that your contribution is licensed under the Apache License 2.0, the same
+as the rest of the project. The Pesuto name and logo are not covered by that license.

@@ -1,0 +1,34 @@
+name: Recording went wrong
+description: A click path, overlay, or render that did not match the application.
+title: "[recording] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The useful report is the one you would want if you were fixing it.
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the application did that the recording did not expect
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `npx demotale doctor`
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: The scenario, or the few lines of it that matter
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Video, a frame, or anything else you can share
+      description: A frame from `demotale check` is often enough.

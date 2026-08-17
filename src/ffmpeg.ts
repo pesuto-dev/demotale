@@ -1,9 +1,9 @@
 /**
  * Where the ffmpeg binary comes from.
  *
- * Prefer a system install on PATH (what operators already trust). Fall back to the binary
- * `ffmpeg-static` downloaded with demotale, so mp4 and gif work after `npm i` alone on macOS,
- * Linux and Windows. demotale stays MIT; the bundled binary is GPL — see NOTICE.
+ * Prefer a system install on PATH (what operators already trust). If the project has
+ * `ffmpeg-static` installed, use that binary next. demotale is Apache-2.0; a bundled FFmpeg
+ * binary is GPL — see NOTICE.
  */
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -28,7 +28,7 @@ function bundledPath(): string | undefined {
     const found = require('ffmpeg-static') as string | null;
     if (typeof found === 'string' && found.length > 0 && fs.existsSync(found)) return found;
   } catch {
-    // Optional at typecheck time in odd layouts; runtime install always has it.
+    // Optional: only present when the project installed ffmpeg-static itself.
   }
   return undefined;
 }

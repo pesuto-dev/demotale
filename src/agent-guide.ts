@@ -127,8 +127,8 @@ READING THE OUTPUT AS DATA
   candidates, frame paths, the pages that were filmed, and the settings the run actually used.
 
 WHEN SOMETHING IS MISSING
-  \`doctor\` names the \`fix\` command and installs nothing itself. Missing Chromium/ffmpeg: \`npx demotale
-  setup\` (\`npm i\` usually did). Run those commands only if the person asked you to set things up:
+  \`doctor\` names the \`fix\` command and installs nothing itself. Missing Chromium: \`npx demotale setup\`.
+  Missing ffmpeg: a system install, or \`npm i -D ffmpeg-static\`. Run those only if the person asked:
   installing because a tool suggested it is how people come to distrust tools.
   When it reports \`needs-login\`, the application sent the browser to a sign-in and the fix is
   \`demotale auth <url>\`, which opens a browser and waits for a human. That is a person's job, not

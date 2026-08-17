@@ -1,5 +1,5 @@
 /**
- * Assert the install smoke: ffmpeg (bundled), chromium, and playwright are ok, and nothing asks
+ * Assert the install smoke: ffmpeg (on PATH), chromium, and playwright are ok, and nothing asks
  * for a separate `npm i -D @playwright/test`.
  */
 import fs from 'node:fs';
@@ -32,9 +32,9 @@ if (by.ffmpeg.detail !== 'bundled' && by.ffmpeg.detail !== 'on PATH') {
   process.exit(1);
 }
 
-// In this image PATH has no ffmpeg, so the pack must have supplied the binary.
-if (by.ffmpeg.detail !== 'bundled') {
-  console.error('expected bundled ffmpeg in the smoke image, got', by.ffmpeg.detail);
+// This image installs ffmpeg with apt, matching GitHub-hosted Ubuntu.
+if (by.ffmpeg.detail !== 'on PATH') {
+  console.error('expected ffmpeg on PATH in the smoke image, got', by.ffmpeg.detail);
   process.exit(1);
 }
 
