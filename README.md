@@ -1,3 +1,13 @@
+<p>
+  <a href="https://pesuto.nl/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://pesuto.nl/assets/logo/lockup-horizontal-paper.svg" />
+      <img src="https://pesuto.nl/assets/logo/lockup-horizontal-ink.svg" alt="pesuto" width="128" height="32" />
+    </picture>
+  </a><br />
+  <a href="https://pesuto.nl/">a pesuto tool</a>
+</p>
+
 # demotale
 
 You type **one sentence to the AI you already use**, and demotale is what that AI needs to record a
