@@ -109,6 +109,17 @@ export class Demo {
   readonly timeline: TimelineEntry[] = [];
   private readonly startedAt = Date.now();
 
+  /**
+   * The overlay covers the page from the first paint, so the video does not open on the application
+   * loading. `card()` writes the title onto that cover; `hideCard()` (or the first action that needs
+   * the page visible) takes it away. Both are remembered so a navigation can put the same picture
+   * back before the new document paints.
+   */
+  private cardTitle = '';
+  private cardSubtitle = '';
+  private cardUp = false;
+  private coverDismissed = false;
+
   constructor(
     private readonly page: Page,
     private readonly config: ResolvedConfig,
@@ -148,6 +159,33 @@ export class Demo {
     await this.page.evaluate(this.script).catch(() => {
       // No document yet (about:blank before the first navigation). addInitScript covers that.
     });
+    this.page.on('load', () => {
+      void this.restoreOverlay().catch(() => {});
+    });
+  }
+
+  /**
+   * After a navigation the overlay is a new DOM. If a title card was up, put the same title back
+   * before the application has a chance to show; the init script already covered the first paint
+   * in the card colour.
+   */
+  private async restoreOverlay(): Promise<void> {
+    await this.ensureOverlay();
+    if (!this.cardUp) return;
+    await this.page.evaluate(
+      (arg) => (window as OverlayWindow).__demo?.card(arg.title, arg.subtitle),
+      { title: this.cardTitle, subtitle: this.cardSubtitle },
+    );
+  }
+
+  /**
+   * The opening cover is not a title card the author wrote; it is there so the first frame is not
+   * the application. Take it away the moment something needs the page visible, unless they already
+   * did that with `hideCard()`.
+   */
+  private async revealIfCovering(): Promise<void> {
+    if (this.coverDismissed) return;
+    await this.hideCard();
   }
 
   /**
@@ -343,6 +381,7 @@ export class Demo {
   }
 
   private async showCaption(text: string, badge: string, hold?: number): Promise<void> {
+    await this.revealIfCovering();
     await this.ensureOverlay();
     await this.page.evaluate(
       (arg) => (window as OverlayWindow).__demo?.say(arg.text, arg.badge),
@@ -391,6 +430,10 @@ export class Demo {
 
   /** A full-screen title card, for the beginning and the end. */
   async card(title: string, subtitle = '', holdMs = 2_600): Promise<void> {
+    this.cardTitle = title;
+    this.cardSubtitle = subtitle;
+    this.cardUp = true;
+    this.coverDismissed = false;
     this.mark({ kind: 'card', text: title, ...(subtitle === '' ? {} : { subtitle }) });
     await this.ensureOverlay();
     await this.hide();
@@ -404,6 +447,8 @@ export class Demo {
 
   /** Take the title card away. */
   async hideCard(): Promise<void> {
+    this.cardUp = false;
+    this.coverDismissed = true;
     await this.page.evaluate(() => (window as OverlayWindow).__demo?.hideCard()).catch(() => {});
     // A settle, not a pause: the card is opaque and fades over 400ms, and a dry run that skipped
     // this would take every later frame through a half-visible card.
@@ -419,6 +464,7 @@ export class Demo {
    * before pointing at something.
    */
   async spotlight(locator: Locator, holdMs = 0, opts: { timeout?: number } = {}): Promise<void> {
+    await this.revealIfCovering();
     const timeout = opts.timeout ?? POINT_AT_TIMEOUT;
     await this.find(locator, timeout);
     await locator.scrollIntoViewIfNeeded({ timeout }).catch(() => {});
@@ -456,6 +502,7 @@ export class Demo {
     locator: Locator,
     opts: { force?: boolean; timeout?: number; settleMs?: number } = {},
   ): Promise<void> {
+    await this.revealIfCovering();
     const timeout = opts.timeout ?? CLICK_TIMEOUT;
     await this.find(locator, timeout);
     await locator.scrollIntoViewIfNeeded({ timeout }).catch(() => {});
@@ -577,6 +624,14 @@ export interface DemotaleOptions {
 export const test = base.extend<DemotaleOptions & DemotaleFixtures>({
   demotale: [{}, { option: true }],
   demotaleMode: ['record', { option: true }],
+
+  // On the context, before the page exists, so about:blank and the first goto are already covered.
+  // page.addInitScript in install() is too late: Playwright's video has already started.
+  context: async ({ context, demotale }, use) => {
+    const config = resolveConfig(demotale);
+    await context.addInitScript(overlayScript(config.theme, config.redact));
+    await use(context);
+  },
 
   demo: async ({ page, demotale, demotaleMode }, use, testInfo: TestInfo) => {
     const config = resolveConfig(demotale);

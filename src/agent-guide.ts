@@ -77,8 +77,8 @@ HIDE WHAT MUST NOT BE FILMED
   click path that somebody will edit later; a hidden element is a fact about the picture.
 
 WRITING THE SCENARIO
-  One \`page.goto('/')\` at the very start, and nothing else. After that, click: loading a deep URL
-  asks the server for assets relative to that path, and a single-page app often loads nothing at all.
+  Open on a title card, then one \`page.goto('/')\`, then \`hideCard()\`. After that, click: loading a
+  deep URL asks the server for assets relative to that path, and a single-page app often loads nothing at all.
   A step is one sentence, not a paragraph. It goes up before the action and stays up during it.
   Assert before you point. \`await expect(x).toBeVisible()\` with a short timeout, then spotlight it:
   waiting on something that will never appear should cost seconds, not the whole test budget.

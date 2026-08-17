@@ -6,7 +6,7 @@
  * ffmpeg would create a second timeline that has to be lined up again for every recording. This way
  * the text is synchronous with the action by definition.
  *
- * Four properties this layer must keep, each of which cost a recording to learn:
+ * Five properties this layer must keep, each of which cost a recording to learn:
  *
  * - It catches no mouse and no keys (`pointer-events: none` on the layer *and* everything in it),
  *   so a subtitle can never swallow the click meant for the button underneath.
@@ -16,6 +16,8 @@
  *   makes running the script twice free.
  * - It keeps itself the last child of `body`. Applications append modals and toasts there, and those
  *   would otherwise cover the subtitle.
+ * - It covers the page from the first paint. Playwright's video starts before `goto` returns and
+ *   before `card()` runs, so a card that fades in from opacity 0 films the application first.
  *
  * The style block it injects is refused by any application that sends `style-src 'self'`, which is
  * why `definePlaywrightConfig` sets `bypassCSP` on the recording browser. That is a property of the
@@ -118,9 +120,9 @@ function css(theme: Theme): string {
       position: absolute; inset: 0; display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 14px; text-align: center;
       background: ${theme.cardSurface}; color: ${theme.text};
-      opacity: 0; transition: opacity 400ms ease;
+      opacity: 1; transition: opacity 400ms ease;
     }
-    #${ID} .demo-card.visible { opacity: 1; }
+    #${ID} .demo-card.hidden { opacity: 0; }
     #${ID} .demo-card h1 { font-size: 46px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
     #${ID} .demo-card p { font-size: 22px; margin: 0; color: ${theme.muted}; }
     @keyframes demo-pulse {
@@ -147,7 +149,37 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
   const ID = ${JSON.stringify(ID)};
   const CSS = ${JSON.stringify(css(theme) + redactionCss(redact))};
   const SHOW_BADGE = ${theme.badge ? 'true' : 'false'};
+  const CARD_SURFACE = ${JSON.stringify(theme.cardSurface)};
+  const COVER_KEY = '__demotale_cover';
+  const COVER_STYLE_ID = '__demo-cover-style';
   const state = {};
+
+  function dismissed() {
+    try { return sessionStorage.getItem(COVER_KEY) === 'off'; } catch { return false; }
+  }
+
+  function paintHtmlCover() {
+    if (dismissed()) {
+      document.documentElement.classList.remove('demotale-cover');
+      return;
+    }
+    if (!document.getElementById(COVER_STYLE_ID)) {
+      const style = document.createElement('style');
+      style.id = COVER_STYLE_ID;
+      style.textContent = 'html.demotale-cover::before{content:"";position:fixed;inset:0;background:'
+        + CARD_SURFACE + ';z-index:2147483647;pointer-events:none;}';
+      (document.head || document.documentElement).appendChild(style);
+    }
+    document.documentElement.classList.add('demotale-cover');
+  }
+
+  function clearHtmlCover() {
+    document.documentElement.classList.remove('demotale-cover');
+  }
+
+  // Before body exists, and so before the overlay can mount: this is what the first video frame
+  // actually is. Without it, goto paints the application and card() fades in over the top.
+  paintHtmlCover();
 
   function ensureRoot() {
     if (state.root && document.body && document.body.contains(state.root)) return state.root;
@@ -179,7 +211,8 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     note.className = 'demo-note';
 
     const card = document.createElement('div');
-    card.className = 'demo-card';
+    card.className = dismissed() ? 'demo-card hidden' : 'demo-card';
+    if (dismissed()) card.style.transition = 'none';
     const title = document.createElement('h1');
     const subtitle = document.createElement('p');
     card.append(title, subtitle);
@@ -188,8 +221,12 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     document.body.appendChild(root);
 
     Object.assign(state, { root, cursor, ring, caption, badge, text, note, card, title, subtitle });
+    if (!dismissed()) clearHtmlCover();
     return root;
   }
+
+  if (document.body) ensureRoot();
+  else document.addEventListener('DOMContentLoaded', () => { paintHtmlCover(); ensureRoot(); }, { once: true });
 
   // Applications append modals and toasts to the end of body, so being last is not a one-time thing.
   function raise() {
@@ -230,12 +267,22 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     },
     hide() { if (state.caption) state.caption.classList.remove('visible'); },
     card(title, subtitle) {
+      try { sessionStorage.removeItem(COVER_KEY); } catch {}
       if (!raise()) return;
+      clearHtmlCover();
       state.title.textContent = title;
       state.subtitle.textContent = subtitle || '';
-      state.card.classList.add('visible');
+      state.card.style.transition = '';
+      state.card.classList.remove('hidden');
     },
-    hideCard() { if (state.card) state.card.classList.remove('visible'); },
+    hideCard() {
+      try { sessionStorage.setItem(COVER_KEY, 'off'); } catch {}
+      clearHtmlCover();
+      if (state.card) {
+        state.card.style.transition = '';
+        state.card.classList.add('hidden');
+      }
+    },
     note(text) {
       if (!raise()) return;
       if (text === null || text === undefined || text === '') {

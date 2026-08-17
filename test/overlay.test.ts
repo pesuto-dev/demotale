@@ -56,6 +56,15 @@ describe('overlayScript', () => {
     expect(redacted).toContain('.org-switcher,\\n    #account { visibility: hidden !important; }');
   });
 
+  it('covers the page from the first paint, so the video does not open on the application', () => {
+    // Opacity 1 is the default; hideCard adds .hidden. The old fade-in from 0 is what filmed the
+    // application for a beat before the title card.
+    expect(script).toContain('.demo-card.hidden');
+    expect(script).not.toContain('.demo-card.visible');
+    expect(script).toContain('html.demotale-cover::before');
+    expect(script).toContain("sessionStorage.getItem(COVER_KEY) === 'off'");
+  });
+
   it('survives a theme value containing a quote instead of breaking the script', () => {
     const script = overlayScript({ ...defaultTheme, fontFamily: `"Escape's Font", sans-serif` });
     expect(() => new Function(script)).not.toThrow();

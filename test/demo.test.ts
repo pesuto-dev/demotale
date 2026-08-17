@@ -21,6 +21,7 @@ function fakePage(events: string[]): Page {
     waitForTimeout: async () => {},
     title: async () => 'Parcel desk',
     url: () => 'http://localhost:4173/parcels',
+    on: () => {},
     mouse: { move: async () => {} },
     screenshot: async (opts: { path: string }) => {
       events.push(`frame ${path.basename(opts.path)}`);

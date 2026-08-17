@@ -1,9 +1,8 @@
 import { test, expect } from '@pesuto/demotale';
 
 test('A tour of the parcel desk', async ({ page, demo }) => {
-  await page.goto('/');
-
   await demo.card('Parcel desk', 'Recorded by demotale, from a script in this repository');
+  await page.goto('/');
   await demo.hideCard();
 
   // Says out loud what the viewer is looking at. A demo that overstates is worse than no demo.

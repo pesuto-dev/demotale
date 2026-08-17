@@ -17,6 +17,13 @@ every subtitle as bare text at the bottom of the page, no cursor, no highlight.
 the filming, not of the application: the served headers are unchanged, and what the CSP is for gets
 measured where that belongs rather than in a video.
 
+**The first frame is the application, then the title card fades in.** Playwright starts the video
+when the page is created, and `goto` paints the app before `card()` runs. A card that starts at
+opacity 0 is a recording of that load.
+
+→ The overlay covers the page from the first paint, in the card colour. `card()` writes the title
+onto that cover. `hideCard()` is what reveals the application.
+
 **The overlay has to be re-injectable.** An SPA navigation or a full reload throws it away.
 `addInitScript` covers new pages but not the one already open, so a direct `evaluate` is needed too,
 plus a guard (`if (window.__demo) return`) so injecting twice does nothing. Check before every action.

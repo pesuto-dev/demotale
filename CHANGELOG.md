@@ -3,6 +3,14 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## 0.1.1 — 2026-08-17
+
+A recording opened on the application for a beat, then the title card faded in over it. The overlay
+now covers the page from the first paint, so the first frame is the card.
+
+The README gif is served from jsDelivr rather than GitHub's raw host, which stopped answering after
+the repository moved.
+
 ## 0.1.0 — 2026-08-10
 
 The first version. Lifted out of a project-internal recorder and made configurable, with the things

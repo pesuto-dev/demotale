@@ -7,7 +7,9 @@ applies: locators, `expect`, fixtures, `test.describe`. What `demo` adds is the 
 import { test, expect } from '@pesuto/demotale';
 
 test('From an order to a shipped parcel', async ({ page, demo }) => {
+  await demo.card('Acme', 'From an order to a shipped parcel');
   await page.goto('/');
+  await demo.hideCard();
   // ...
 });
 ```
@@ -17,9 +19,9 @@ The test title becomes the file name, slugged. `From an order to a shipped parce
 
 ## Shape of a good scenario
 
-**One full page load, at the start.** After that, navigate by clicking. Loading a deep URL directly
-asks the server for assets relative to that path, and in a single-page app without a `<base href>`
-that loads nothing at all. Clicking is also what a person does.
+**One full page load, at the start.** After the title card, navigate by clicking. Loading a deep URL
+directly asks the server for assets relative to that path, and in a single-page app without a
+`<base href>` that loads nothing at all. Clicking is also what a person does.
 
 **Say it before you do it.** `step()` shows the text, waits until it can have been read, and only then
 runs the action, leaving the text up while it happens. The viewer then knows what they are watching
@@ -38,7 +40,8 @@ fifteen-minute budget with a fully provisioned environment around it.
 ### Text
 
 ```ts
-await demo.card('Acme', 'From an order to a shipped parcel');  // full-screen title card
+await demo.card('Acme', 'From an order to a shipped parcel');  // first frame: this, not the app
+await page.goto('/');
 await demo.hideCard();
 
 await demo.say('Someone picks the order. Nothing here happens by itself.');
