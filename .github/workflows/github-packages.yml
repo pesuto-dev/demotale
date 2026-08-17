@@ -1,0 +1,32 @@
+name: GitHub Packages
+
+# GitHub's repo sidebar only lists packages on GitHub Packages, not npmjs. The scope has to match
+# the GitHub account, so this publishes @pesuto-dev/demotale here. The package people install is
+# still @pesuto/demotale from the npm registry.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: '@pesuto-dev'
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm pkg set name=@pesuto-dev/demotale
+      - run: npm publish --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
