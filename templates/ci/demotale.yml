@@ -1,0 +1,34 @@
+name: demotale
+
+# Re-records the demo on every push and pull request. A red job means the click path no longer
+# matches the application, which is the point: a stale video would have been worse.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # --with-deps is for the OS libraries Chromium needs on Linux. The browser binary itself
+      # usually arrived at npm ci via demotale's postinstall.
+      - run: npx playwright install --with-deps chromium
+
+      # GitHub's Ubuntu runners already have ffmpeg. Nothing extra for that.
+      - run: npx demotale record
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo
+          path: demo/output/*
+          if-no-files-found: error

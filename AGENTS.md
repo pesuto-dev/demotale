@@ -17,6 +17,7 @@ Do **not** use it for native apps, pure API demos with no UI, or spoken voiceove
 ```bash
 npm i -D @pesuto/demotale
 npx demotale init --agent
+npx demotale init --ci
 npx demotale doctor
 ```
 

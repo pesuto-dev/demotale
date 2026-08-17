@@ -136,7 +136,7 @@ WHEN SOMETHING IS MISSING
 
 WHEN YOU ARE DONE
   Say what you changed and leave it for the developer to commit. The scenario belongs in the
-  repository — thirty lines that CI can run again tomorrow — and \`demo/output/\` does not; it is a
+  repository — thirty lines that CI can run again tomorrow (\`init --ci\` writes the workflow) — and \`demo/output/\` does not; it is a
   build artefact and \`init\` gitignores it.
   Aim for under a minute and five to eight steps: past that a demo stops being watched. \`record\`
   plays in real time and costs about the length of the video; \`check\` takes seconds.

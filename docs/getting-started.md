@@ -17,6 +17,7 @@ Playwright and Chromium come with `@pesuto/demotale`. Put ffmpeg on PATH
 ```bash
 npm i -D @pesuto/demotale
 npx demotale init --agent
+npx demotale init --ci
 ```
 
 `init` writes four things and overwrites none of them:
@@ -29,6 +30,7 @@ npx demotale init --agent
 | `.gitignore` lines and npm scripts | Including `.auth/`, which holds a credential |
 
 With `--agent` it also appends five lines to `AGENTS.md` that point at `npx demotale agent-guide`.
+With `--ci` it writes `.github/workflows/demotale.yml` if that file is not already there.
 
 If install scripts were skipped, or doctor reports a missing browser: `npx demotale setup`.
 

@@ -22,6 +22,7 @@ demotale is an npm CLI (`@pesuto/demotale`). A scenario is a Playwright test in 
 ```bash
 npm i -D @pesuto/demotale
 npx demotale init --agent
+npx demotale init --ci
 ```
 
 Requires Node >= 22.12. Chromium comes with the package. Put ffmpeg on PATH, or

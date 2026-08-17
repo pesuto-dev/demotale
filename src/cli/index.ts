@@ -38,7 +38,7 @@ const COMMANDS = [
 ] as const;
 
 const OPTIONS = [
-  ['init', '--agent (five lines in AGENTS.md pointing at the guide)'],
+  ['init', '--agent (five lines in AGENTS.md pointing at the guide), --ci (GitHub Actions workflow)'],
   ['check', '--headed, --port <n>, --base-url <url>, --json, -- <playwright args>'],
   [
     'record',
@@ -89,7 +89,7 @@ async function run(argv: string[]): Promise<number> {
   // Flags that take no value. Anything not listed here swallows the next word, which for `record`
   // would quietly turn a single named scenario into all of them.
   const BOOLEAN_FLAGS: Record<string, string[]> = {
-    init: ['agent'],
+    init: ['agent', 'ci'],
     record: ['headed', 'json'],
     check: ['headed', 'json'],
     render: ['json'],
@@ -100,7 +100,7 @@ async function run(argv: string[]): Promise<number> {
 
   switch (command) {
     case 'init':
-      init(process.cwd(), { agent: flagBoolean(args, 'agent') });
+      init(process.cwd(), { agent: flagBoolean(args, 'agent'), ci: flagBoolean(args, 'ci') });
       return 0;
     case 'agent-guide':
       say(agentGuide());

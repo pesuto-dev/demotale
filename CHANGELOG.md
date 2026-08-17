@@ -3,6 +3,15 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## 0.2.0 — 2026-08-17
+
+`init --ci` writes a GitHub Actions workflow that re-records the demo. It never overwrites one that
+is already there.
+
+The package is now Apache-2.0. ffmpeg-static is no longer a required dependency: recordings use
+ffmpeg on PATH when present, or an optional `ffmpeg-static` install, and still leave a webm when
+neither is there. The Pesuto name and logo stay reserved.
+
 ## 0.1.2 — 2026-08-17
 
 Package metadata matches the brand: author is pesuto, homepage is the landing page.

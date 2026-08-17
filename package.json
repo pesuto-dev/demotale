@@ -1,6 +1,6 @@
 {
   "name": "@pesuto/demotale",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Record narrated demo videos of a local web app (Playwright + overlays + ffmpeg). Built for humans and coding agents.",
   "keywords": [
     "demo",

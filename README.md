@@ -41,6 +41,7 @@ package — the same path CI runs on every push.
 ```bash
 npm i -D @pesuto/demotale
 npx demotale init --agent
+npx demotale init --ci
 ```
 
 Needs Node 22.12 or later. That install downloads Chromium (postinstall). A system ffmpeg on your
@@ -158,6 +159,9 @@ credential; `demotale init` puts it in your `.gitignore` and says why.
 
 ## In CI
 
+`npx demotale init --ci` writes a GitHub Actions workflow that does this, and never overwrites one
+that is already there:
+
 ```yaml
 - run: npx playwright install --with-deps chromium
 - run: npx demotale record
@@ -172,7 +176,7 @@ already downloads the browser itself; on GitHub-hosted Ubuntu, system ffmpeg is 
 
 | | |
 | --- | --- |
-| `demotale init` | Config, an example scenario, gitignore lines and npm scripts. Never overwrites. `--agent` also points AGENTS.md at the guide |
+| `demotale init` | Config, an example scenario, gitignore lines and npm scripts. Never overwrites. `--agent` also points AGENTS.md at the guide. `--ci` writes a GitHub Actions workflow that re-records |
 | `demotale agent-guide` | Print the one page of instructions for whatever writes the scenarios |
 | `demotale setup` | Download Chromium when postinstall was skipped, and say whether ffmpeg is available |
 | `demotale check [file]` | Play the click path without filming it. A frame per subtitle, and what the page held when a locator missed |
