@@ -10,12 +10,12 @@
 
 # demotale
 
-You type **one sentence to the AI you already use**, and demotale is what that AI needs to record a
-demo video of your running web app. Playwright plays a scripted click path, text overlays explain
-each step, and ffmpeg turns it into an mp4, a gif, a subtitle track and a transcript.
+demotale records a narrated demo of your running web app, then re-records it in CI when the UI
+changes — so the video does not go stale the first time someone moves a button.
 
-The scenario is a file in your repo. Record it locally, or let CI run the same command when the UI
-changes, so the demo does not go stale the first time someone moves a button.
+Playwright plays a scripted click path, text overlays explain each step, and ffmpeg writes an mp4, a
+gif, a subtitle track and a transcript. You type one sentence to the AI you already use; that agent
+writes the scenario. No microphone, no account, no upload.
 
 <!-- Made by demotale from examples/basic, which CI records on every push. -->
 ![A demo recorded by demotale](https://cdn.jsdelivr.net/gh/pesuto-dev/demotale@v0.1.1/docs/media/example.gif)

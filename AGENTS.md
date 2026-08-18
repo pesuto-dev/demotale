@@ -1,8 +1,9 @@
 # Agents: demotale
 
-demotale records a **narrated demo video** of a **locally running web app**: Playwright plays a
-scripted click path, on-page text overlays explain each step, and ffmpeg produces mp4/gif plus
-subtitles and a transcript. No microphone, no SaaS upload.
+demotale records a **narrated demo video** of a **locally running web app**, then re-records it in
+CI when the UI changes, so the demo stays in sync. Playwright plays a scripted click path, on-page
+text overlays explain each step, and ffmpeg produces mp4/gif plus subtitles and a transcript. No
+microphone, no SaaS upload.
 
 ## When to reach for it
 
