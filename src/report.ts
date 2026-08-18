@@ -49,6 +49,8 @@ export type ProblemCode =
   | 'missing-dependency'
   | 'no-scenarios'
   | 'node-too-old'
+  | 'missing-agent-guide'
+  | 'missing-ci-workflow'
   | 'environment';
 
 export interface Problem {

@@ -88,6 +88,14 @@ describe('init', () => {
     expect(written).toContain('playwright.config.ts');
   });
 
+  it('prints doctor then record as the next steps', () => {
+    init(root);
+    const out = vi.mocked(process.stdout.write).mock.calls.map((call) => String(call[0])).join('');
+    expect(out).toContain('demotale.config.ts');
+    expect(out).toContain('npx demotale doctor');
+    expect(out).toContain('npx demotale record');
+  });
+
   it('never overwrites what is already there', () => {
     fs.writeFileSync(path.join(root, 'demotale.config.ts'), 'mine, and hard won');
     const { written, skipped } = init(root);

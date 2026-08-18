@@ -16,21 +16,21 @@ Playwright and Chromium come with `@pesuto/demotale`. Put ffmpeg on PATH
 
 ```bash
 npm i -D @pesuto/demotale
-npx demotale init --agent
-npx demotale init --ci
+npx demotale init
 ```
 
-`init` writes four things and overwrites none of them:
+`init` writes these and overwrites none of them:
 
 | | |
 | --- | --- |
 | `demotale.config.ts` | Where your app runs, how fast the demo goes, what is never in frame |
 | `playwright.config.ts` | Generated from the above. Not meant to be edited |
 | `demo/example.demo.ts` | A scenario that records the front page |
+| `AGENTS.md` | Five lines pointing at `npx demotale agent-guide`. `--no-agent` skips this |
 | `.gitignore` lines and npm scripts | Including `.auth/`, which holds a credential |
 
-With `--agent` it also appends five lines to `AGENTS.md` that point at `npx demotale agent-guide`.
-With `--ci` it writes `.github/workflows/demotale.yml` if that file is not already there.
+`--ci` writes `.github/workflows/demotale.yml` if that file is not already there. Skip it until
+you want CI to re-record; `doctor` will name the command when the file is missing.
 
 If install scripts were skipped, or doctor reports a missing browser: `npx demotale setup`.
 
@@ -59,7 +59,8 @@ npx demotale doctor
 
 Ten seconds, one line per thing, and a sentence for anything that is missing. Worth running before
 the first recording rather than after twenty minutes of one. It installs nothing. Missing Chromium
-is `npx demotale setup`. Missing ffmpeg is a system install, or `npm i -D ffmpeg-static`.
+is `npx demotale setup`. Missing ffmpeg is a system install, or `npm i -D ffmpeg-static`. Missing
+CI is `npx demotale init --ci`.
 
 ## Record
 
@@ -91,5 +92,8 @@ selectors does not match what you thought.
 ## Then
 
 - [Writing a scenario](writing-a-scenario.md) for what to put in the file.
-- [Recipes](recipes.md) if your app needs a login, if the demo has a long wait in the middle, or if
-  you want CI to keep the video current.
+- [Recipes](recipes.md) if your app needs a login, or if the demo has a long wait in the middle.
+
+CI is the same `demotale record` as locally. `doctor` will tell you if the workflow is missing;
+`npx demotale init --ci` writes it. A UI change that breaks the click path then turns the job red
+instead of shipping a stale video.

@@ -1,9 +1,13 @@
 /**
  * `demotale init` — put the files a project needs in place, and nothing else.
  *
- * It never overwrites. Somebody running this a second time, in a project that already records, has
- * usually mistyped something; silently replacing their config with a template would be the worst
- * possible response to that.
+ * It never overwrites. The agent block in AGENTS.md is written by default (five lines that point at
+ * `agent-guide`); `--no-agent` skips it. CI is a separate flag, because a workflow in `.github/` is
+ * a bigger step than those five lines.
+ *
+ * Somebody running this a second time, in a project that already records, has usually mistyped
+ * something; silently replacing their config with a template would be the worst possible response
+ * to that.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -100,18 +104,25 @@ function updatePackageScripts(root: string, result: InitResult): void {
  * Appends rather than writes, because AGENTS.md belongs to the project and usually already says
  * things. A marker keeps a second run from stacking the block up again.
  */
-function updateAgentsFile(root: string, result: InitResult): void {
+function updateAgentsFile(root: string, result: InitResult): 'created' | 'appended' | 'skipped' {
   const file = path.join(root, 'AGENTS.md');
   const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
 
   if (existing.includes(AGENTS_MARKER)) {
     result.skipped.push('AGENTS.md (already points at the agent guide)');
-    return;
+    return 'skipped';
   }
 
   const separator = existing === '' ? '' : existing.endsWith('\n') ? '\n' : '\n\n';
   fs.writeFileSync(file, `${existing}${separator}${agentsBlock()}\n`);
-  result.written.push(existing === '' ? 'AGENTS.md' : 'AGENTS.md (five lines appended)');
+  if (existing === '') {
+    result.written.push(
+      'AGENTS.md  (five lines: run `demotale agent-guide` instead of inventing a scenario)',
+    );
+    return 'created';
+  }
+  result.written.push('AGENTS.md  (five lines appended)');
+  return 'appended';
 }
 
 export function init(root = process.cwd(), options: { agent?: boolean; ci?: boolean } = {}): InitResult {
@@ -122,11 +133,12 @@ export function init(root = process.cwd(), options: { agent?: boolean; ci?: bool
     );
   }
 
+  const agent = options.agent !== false;
   const result: InitResult = { written: [], skipped: [] };
   copyTree(TEMPLATE_DIR, root, result, root);
   updateGitignore(root, result);
   updatePackageScripts(root, result);
-  if (options.agent === true) updateAgentsFile(root, result);
+  const agents = agent ? updateAgentsFile(root, result) : 'skipped';
   if (options.ci === true) {
     if (!fs.existsSync(CI_DIR)) {
       throw new UserFacingError(
@@ -139,17 +151,24 @@ export function init(root = process.cwd(), options: { agent?: boolean; ci?: bool
 
   for (const file of result.written) say(`wrote    ${file}`);
   for (const file of result.skipped) say(`kept     ${file} (already there)`);
+  if (agents === 'appended') {
+    say(
+      'Appended five lines to AGENTS.md so an agent runs `demotale agent-guide` instead of inventing a scenario.',
+    );
+  }
 
   say('');
-  say('Next: point baseUrl and webServer in demotale.config.ts at your app, then run');
-  say('  npx demotale check');
-  if (options.agent !== true) {
+  say('Next:');
+  say('  1. Point baseUrl and webServer in demotale.config.ts at your app');
+  say('  2. npx demotale doctor');
+  say('  3. npx demotale record');
+  if (!agent) {
     say('');
-    say('If an agent writes the demos here, run "demotale init --agent" as well.');
+    say('If an agent writes the demos here, run "demotale init" again (it writes the five lines).');
   }
   if (options.ci !== true) {
     say('');
-    say('If CI should re-record the demo, run "demotale init --ci" as well.');
+    say('If CI should re-record the demo, run "demotale init --ci". Doctor will say so if it is missing.');
   }
 
   return result;

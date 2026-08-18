@@ -3,6 +3,15 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## 0.2.2 — 2026-08-18
+
+Simplify install. `init` writes the agent block in AGENTS.md by default (`--no-agent` skips it)
+and prints the next three steps: point the config at your app, `doctor`, `record`. When it appends
+to an existing AGENTS.md it says so in one sentence. CI stays `init --ci`; doctor warns when that
+workflow is missing, and does not write it.
+
+The README leads with the stale-demo problem, a short scenario, then CI.
+
 ## 0.2.1 — 2026-08-17
 
 Doctor, join, render and setup now share one ffmpeg-missing hint. The optional `ffmpeg-static`

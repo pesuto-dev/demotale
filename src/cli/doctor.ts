@@ -9,6 +9,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { AGENTS_MARKER } from '../agent-guide.js';
 import { looksLikeLogin } from '../check.js';
 import { findConfigFile, loadConfig, type ResolvedConfig } from '../config.js';
 import { ffmpegMissingFix, ffmpegSourceDetail, resolveFfmpeg } from '../ffmpeg.js';
@@ -536,6 +537,36 @@ async function baseUrlCheck(config: ResolvedConfig, hasSession: boolean): Promis
   }
 }
 
+function agentGuideCheck(root: string): Check {
+  const file = path.join(root, 'AGENTS.md');
+  const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  if (existing.includes(AGENTS_MARKER)) {
+    return { status: 'ok', label: 'agent', detail: 'AGENTS.md points at demotale agent-guide' };
+  }
+  return {
+    status: 'warn',
+    label: 'agent',
+    code: 'missing-agent-guide',
+    detail:
+      'AGENTS.md does not point at demotale agent-guide, so an agent will invent a scenario from memory.',
+    fix: 'npx demotale init',
+  };
+}
+
+function ciWorkflowCheck(root: string): Check {
+  const workflow = path.join('.github', 'workflows', 'demotale.yml');
+  if (fs.existsSync(path.join(root, workflow))) {
+    return { status: 'ok', label: 'ci', detail: workflow };
+  }
+  return {
+    status: 'warn',
+    label: 'ci',
+    code: 'missing-ci-workflow',
+    detail: 'no GitHub Actions workflow, so a UI change will not re-record the demo.',
+    fix: 'npx demotale init --ci',
+  };
+}
+
 export async function collectChecks(
   root: string,
 ): Promise<{ checks: Check[]; config: ResolvedConfig | undefined }> {
@@ -547,6 +578,9 @@ export async function collectChecks(
     const loaded = await loadConfig(root);
     config = loaded.config;
     checks.push(...configChecks(root, loaded.config, loaded.file));
+    if (loaded.file !== undefined) {
+      checks.push(agentGuideCheck(root), ciWorkflowCheck(root));
+    }
 
     const server = webServerCheck(root, loaded.config);
     checks.push(...server);

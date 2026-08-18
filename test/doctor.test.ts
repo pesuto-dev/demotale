@@ -234,4 +234,52 @@ describe('doctor', () => {
     const { checks } = await collectChecks(root);
     expect(find(checks, 'webServer')[0]?.status).toBe('ok');
   });
+
+  it('warns when AGENTS.md does not point at the guide, and names the fix', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://localhost:4173' }`);
+
+    const { checks } = await collectChecks(root);
+    const [agent] = find(checks, 'agent');
+
+    expect(agent?.status).toBe('warn');
+    expect(agent?.code).toBe('missing-agent-guide');
+    expect(agent?.fix).toBe('npx demotale init');
+  });
+
+  it('is happy when AGENTS.md already points at the guide', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://localhost:4173' }`);
+    write('AGENTS.md', '<!-- demotale:agent-guide -->\nrun demotale agent-guide\n');
+
+    const { checks } = await collectChecks(root);
+    expect(find(checks, 'agent')[0]?.status).toBe('ok');
+  });
+
+  it('warns when the CI workflow is missing, and names the fix', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://localhost:4173' }`);
+
+    const { checks } = await collectChecks(root);
+    const [ci] = find(checks, 'ci');
+
+    expect(ci?.status).toBe('warn');
+    expect(ci?.code).toBe('missing-ci-workflow');
+    expect(ci?.fix).toBe('npx demotale init --ci');
+  });
+
+  it('is happy when the CI workflow is already there', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://localhost:4173' }`);
+    write('.github/workflows/demotale.yml', 'name: demotale\n');
+
+    const { checks } = await collectChecks(root);
+    expect(find(checks, 'ci')[0]?.status).toBe('ok');
+  });
+
+  it('does not mention agent or CI in a directory that has not been inited', async () => {
+    const { checks } = await collectChecks(root);
+    expect(find(checks, 'agent')).toHaveLength(0);
+    expect(find(checks, 'ci')).toHaveLength(0);
+  });
 });

@@ -15,7 +15,7 @@ import { createRequire } from 'node:module';
 
 const version = (createRequire(import.meta.url)('../package.json') as { version: string }).version;
 
-/** Marks the block in AGENTS.md, so a second `init --agent` leaves it alone. */
+/** Marks the block in AGENTS.md, so a second `init` leaves it alone. */
 export const AGENTS_MARKER = '<!-- demotale:agent-guide -->';
 
 /** The five lines. Deliberately short: their whole job is to point somewhere that cannot go stale. */

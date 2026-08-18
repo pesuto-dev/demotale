@@ -76,8 +76,8 @@ thing that makes a demo feel like an advertisement.
 ## Keeping the video current in CI
 
 The reason for all of this is that a recording made by hand goes stale at the first UI change. Let CI
-make it again. `npx demotale init --ci` writes the workflow below (and never overwrites one that is
-already there):
+make it again. `npx demotale init --ci` writes the workflow below, and never overwrites one that is
+already there. `doctor` names that command when the file is missing:
 
 ```yaml
 - uses: actions/setup-node@v4

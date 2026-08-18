@@ -26,7 +26,7 @@ const require = createRequire(import.meta.url);
 const pkg = require('../../package.json') as { version: string };
 
 const COMMANDS = [
-  ['init', 'Write a config, an example scenario and the npm scripts. Never overwrites.'],
+  ['init', 'Write a config, an example scenario, AGENTS.md and the npm scripts. Never overwrites.'],
   ['agent-guide', 'Print the instructions for whatever writes the scenarios. One page.'],
   ['setup', 'Download Chromium (and verify ffmpeg) when postinstall was skipped.'],
   ['check [file]', 'Play the click path without filming it, and write a frame per subtitle.'],
@@ -38,7 +38,7 @@ const COMMANDS = [
 ] as const;
 
 const OPTIONS = [
-  ['init', '--agent (five lines in AGENTS.md pointing at the guide), --ci (GitHub Actions workflow)'],
+  ['init', '--ci (GitHub Actions workflow), --no-agent (skip the five lines in AGENTS.md)'],
   ['check', '--headed, --port <n>, --base-url <url>, --json, -- <playwright args>'],
   [
     'record',
@@ -89,7 +89,7 @@ async function run(argv: string[]): Promise<number> {
   // Flags that take no value. Anything not listed here swallows the next word, which for `record`
   // would quietly turn a single named scenario into all of them.
   const BOOLEAN_FLAGS: Record<string, string[]> = {
-    init: ['agent', 'ci'],
+    init: ['agent', 'ci', 'no-agent'],
     record: ['headed', 'json'],
     check: ['headed', 'json'],
     render: ['json'],
@@ -100,7 +100,7 @@ async function run(argv: string[]): Promise<number> {
 
   switch (command) {
     case 'init':
-      init(process.cwd(), { agent: flagBoolean(args, 'agent'), ci: flagBoolean(args, 'ci') });
+      init(process.cwd(), { agent: !flagBoolean(args, 'no-agent'), ci: flagBoolean(args, 'ci') });
       return 0;
     case 'agent-guide':
       say(agentGuide());

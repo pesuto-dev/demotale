@@ -23,13 +23,15 @@ writes the scenario. No microphone, no account, no upload.
 That gif was not screen-captured. It is `examples/basic/demo/parcel-desk.demo.ts`, recorded by this
 package — the same path CI runs on every push.
 
-- **For the agent you already have.** After `init --agent`, five lines in `AGENTS.md` point at
-  `demotale agent-guide`. The agent writes the scenario; demotale is the motor and the feedback
-  (`check`, then one `record`).
-- **No microphone, no editor.** The explanation is text on screen, so a UI change costs you one
-  command instead of another afternoon of re-recording.
+## Why
+
 - **In git, re-recorded by CI.** Same scenario, same `demotale record`. The demo stays current
   without a hand-filmed remake.
+- **No microphone, no editor.** The explanation is text on screen, so a UI change costs you one
+  command instead of another afternoon of re-recording.
+- **For the agent you already have.** After `init`, five lines in `AGENTS.md` point at
+  `demotale agent-guide`. The agent writes the scenario; demotale is the motor and the feedback
+  (`check`, then one `record`).
 - **Runs on your machine, free.** Playwright and Chromium come with the package. ffmpeg is a
   system install, or `ffmpeg-static` if you add it. No account, no upload, no service.
 - **Honest by default.** `note()` puts "seeded data, no real customer" on screen and keeps it there,
@@ -40,8 +42,7 @@ package — the same path CI runs on every push.
 
 ```bash
 npm i -D @pesuto/demotale
-npx demotale init --agent
-npx demotale init --ci
+npx demotale init
 ```
 
 Needs Node 22.12 or later. That install downloads Chromium (postinstall). A system ffmpeg on your
@@ -56,7 +57,7 @@ in ten seconds, and says what to do about each thing. It installs nothing itself
 
 ### For your coding agent
 
-After `init --agent`, five lines in `AGENTS.md` point at the real instructions. When you ask for a
+After `init`, five lines in `AGENTS.md` point at the real instructions. When you ask for a
 demo, the agent should run this and follow it — not invent a scenario from memory:
 
 ```bash
@@ -74,21 +75,10 @@ The loop is: point the config at your app → write `demo/<thing>.demo.ts` → `
 import { test, expect } from '@pesuto/demotale';
 
 test('A guided tour', async ({ page, demo }) => {
-  await demo.card('Acme', 'From an incoming order to a shipped parcel');
   await page.goto('/');
-  await demo.hideCard();
-  await demo.note('Seeded data. No real customer.');
-
-  await demo.say('Someone picks the order. Nothing here happens by itself.');
-
-  await demo.step('The list comes from our own cache, and the screen says how old it is.', async () => {
-    await demo.spotlight(page.getByTestId('cache-age'), 2400);
-    await demo.clearSpotlight();
-  });
-
   await demo.step('Opening it fetches the order live.', async () => {
     await demo.click(page.getByRole('link', { name: 'Open' }));
-    await expect(page.getByRole('heading', { name: 'Order' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: 'Order' })).toBeVisible();
   });
 });
 ```
@@ -103,6 +93,23 @@ npx demotale record
 
 You get `demo/output/a-guided-tour.mp4`, plus a `.gif`, a `.vtt` subtitle track and a markdown
 transcript with timestamps.
+
+## Keep it current in CI
+
+`npx demotale init --ci` writes a GitHub Actions workflow that does this, and never overwrites one
+that is already there. `doctor` will say so if the file is missing.
+
+```yaml
+- run: npx playwright install --with-deps chromium
+- run: sudo apt-get update && sudo apt-get install -y ffmpeg
+- run: npx demotale record
+- uses: actions/upload-artifact@v4
+  with: { name: demo, path: demo/output/* }
+```
+
+`--with-deps` installs the OS libraries Chromium needs on Linux runners. The package postinstall
+already downloads the browser itself. GitHub-hosted Ubuntu does not ship ffmpeg; install it in the
+job (`sudo apt-get install -y ffmpeg`) or the recording stays a webm.
 
 ## The scenario API
 
@@ -157,28 +164,11 @@ need nobody.
 That file is a signed-in session for a real account, in plain JSON, on disk. Treat it as a
 credential; `demotale init` puts it in your `.gitignore` and says why.
 
-## In CI
-
-`npx demotale init --ci` writes a GitHub Actions workflow that does this, and never overwrites one
-that is already there:
-
-```yaml
-- run: npx playwright install --with-deps chromium
-- run: sudo apt-get update && sudo apt-get install -y ffmpeg
-- run: npx demotale record
-- uses: actions/upload-artifact@v4
-  with: { name: demo, path: demo/output/* }
-```
-
-`--with-deps` installs the OS libraries Chromium needs on Linux runners. The package postinstall
-already downloads the browser itself. GitHub-hosted Ubuntu does not ship ffmpeg; install it in the
-job (`sudo apt-get install -y ffmpeg`) or the recording stays a webm.
-
 ## Commands
 
 | | |
 | --- | --- |
-| `demotale init` | Config, an example scenario, gitignore lines and npm scripts. Never overwrites. `--agent` also points AGENTS.md at the guide. `--ci` writes a GitHub Actions workflow that re-records |
+| `demotale init` | Config, an example scenario, AGENTS.md, gitignore lines and npm scripts. Never overwrites. `--ci` writes a GitHub Actions workflow that re-records. `--no-agent` skips AGENTS.md |
 | `demotale agent-guide` | Print the one page of instructions for whatever writes the scenarios |
 | `demotale setup` | Download Chromium when postinstall was skipped, and say whether ffmpeg is available |
 | `demotale check [file]` | Play the click path without filming it. A frame per subtitle, and what the page held when a locator missed |

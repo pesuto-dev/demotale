@@ -64,7 +64,7 @@ describe('agentGuide', () => {
   });
 });
 
-describe('init --agent', () => {
+describe('init agent block', () => {
   let root: string;
 
   beforeEach(() => {
@@ -77,30 +77,49 @@ describe('init --agent', () => {
     fs.rmSync(root, { recursive: true, force: true });
   });
 
-  it('writes AGENTS.md when there is none', () => {
-    init(root, { agent: true });
+  it('writes AGENTS.md by default', () => {
+    init(root);
     expect(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8')).toContain('demotale agent-guide');
+  });
+
+  it('says what the new AGENTS.md is for, without a mutation notice', () => {
+    init(root);
+    const out = vi.mocked(process.stdout.write).mock.calls.map((call) => String(call[0])).join('');
+    expect(out).toContain('run `demotale agent-guide` instead of inventing a scenario');
+    expect(out).not.toContain('Appended five lines to AGENTS.md');
   });
 
   it('appends to an AGENTS.md that already says things', () => {
     fs.writeFileSync(path.join(root, 'AGENTS.md'), '# House rules\n\nUse tabs.\n');
-    init(root, { agent: true });
+    init(root);
 
     const written = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
     expect(written).toContain('Use tabs.');
     expect(written).toContain('demotale agent-guide');
   });
 
+  it('says so in one sentence when it appends to an existing AGENTS.md', () => {
+    fs.writeFileSync(path.join(root, 'AGENTS.md'), '# House rules\n\nUse tabs.\n');
+    init(root);
+    const out = vi.mocked(process.stdout.write).mock.calls.map((call) => String(call[0])).join('');
+    expect(out).toContain(
+      'Appended five lines to AGENTS.md so an agent runs `demotale agent-guide` instead of inventing a scenario.',
+    );
+  });
+
   it('does not stack the block up on a second run', () => {
-    init(root, { agent: true });
-    init(root, { agent: true });
+    init(root);
+    vi.mocked(process.stdout.write).mockClear();
+    init(root);
 
     const written = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
     expect(written.split(AGENTS_MARKER)).toHaveLength(2);
+    const out = vi.mocked(process.stdout.write).mock.calls.map((call) => String(call[0])).join('');
+    expect(out).not.toContain('Appended five lines to AGENTS.md');
   });
 
-  it('leaves AGENTS.md alone without the flag', () => {
-    init(root);
+  it('skips AGENTS.md when asked', () => {
+    init(root, { agent: false });
     expect(fs.existsSync(path.join(root, 'AGENTS.md'))).toBe(false);
   });
 });
