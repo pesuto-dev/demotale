@@ -11,7 +11,7 @@
 # demotale
 
 demotale records a narrated demo of your running web app, then re-records it in CI when the UI
-changes — so the video does not go stale the first time someone moves a button.
+changes, so the video does not go stale the first time someone moves a button.
 
 Playwright plays a scripted click path, text overlays explain each step, and ffmpeg writes an mp4, a
 gif, a subtitle track and a transcript. You type one sentence to the AI you already use; that agent
@@ -21,7 +21,7 @@ writes the scenario. No microphone, no account, no upload.
 ![A demo recorded by demotale](https://cdn.jsdelivr.net/gh/pesuto-dev/demotale@v0.1.1/docs/media/example.gif)
 
 That gif was not screen-captured. It is `examples/basic/demo/parcel-desk.demo.ts`, recorded by this
-package — the same path CI runs on every push.
+package, the same path CI runs on every push.
 
 ## Why
 
@@ -58,7 +58,7 @@ in ten seconds, and says what to do about each thing. It installs nothing itself
 ### For your coding agent
 
 After `init`, five lines in `AGENTS.md` point at the real instructions. When you ask for a
-demo, the agent should run this and follow it — not invent a scenario from memory:
+demo, the agent should run this and follow it, not invent a scenario from memory:
 
 ```bash
 npx demotale agent-guide
@@ -186,9 +186,9 @@ locator where there is one. In JSON mode stdout carries the document and nothing
 
 - [Getting started](https://github.com/pesuto-dev/demotale/blob/main/docs/getting-started.md)
 - [Writing a scenario](https://github.com/pesuto-dev/demotale/blob/main/docs/writing-a-scenario.md)
-- [Recipes](https://github.com/pesuto-dev/demotale/blob/main/docs/recipes.md) — apps behind a login, two-part recordings, CI
-- [Traps](https://github.com/pesuto-dev/demotale/blob/main/docs/traps.md) — what actually goes wrong when you record a browser, and why
-- [AGENTS.md](https://github.com/pesuto-dev/demotale/blob/main/AGENTS.md) / [llms.txt](https://github.com/pesuto-dev/demotale/blob/main/llms.txt) — for coding agents discovering this repo
+- [Recipes](https://github.com/pesuto-dev/demotale/blob/main/docs/recipes.md): apps behind a login, two-part recordings, CI
+- [Traps](https://github.com/pesuto-dev/demotale/blob/main/docs/traps.md): what actually goes wrong when you record a browser, and why
+- [AGENTS.md](https://github.com/pesuto-dev/demotale/blob/main/AGENTS.md) / [llms.txt](https://github.com/pesuto-dev/demotale/blob/main/llms.txt): for coding agents discovering this repo
 
 ## What it does not do
 
