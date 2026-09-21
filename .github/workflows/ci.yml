@@ -21,6 +21,10 @@ jobs:
           cache: npm
 
       - run: npm ci
+      # overlay-init.test.ts opens Chromium. postinstall downloads the browser; --with-deps
+      # is the OS libraries GitHub-hosted Ubuntu does not ship.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
