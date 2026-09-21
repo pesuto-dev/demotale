@@ -3,6 +3,12 @@
 Notable changes, newest first. This project follows [semantic versioning](https://semver.org/) from
 0.1.0 onwards.
 
+## Unreleased
+
+The overlay init script no longer throws when Playwright runs it before `<html>` exists. The opening
+cover still paints as soon as that element appears, so a deferred script cannot film the application
+first.
+
 ## 0.3.0 — 2026-08-29
 
 Ask for the artefact you want. `demotale video` writes an mp4, `demotale gif` a gif (reuses the last

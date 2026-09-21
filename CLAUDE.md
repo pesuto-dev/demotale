@@ -42,7 +42,7 @@ when its acceptance criterion passes, not when the files exist.
 ```
 src/              the package: demo, overlay, theme, config, playwright, render, join, captions, cli/
 templates/        what `demotale init` writes into a user's project
-test/             vitest, unit only
+test/             vitest: unit tests plus overlay-init Chromium cases
 docs/             English user docs + media/example.gif
 examples/basic/   tiny static app plus a scenario, recorded by CI
 .plan/            Dutch working docs (gitignored): KOERS, OVERDRACHT, stappen/, achtergrond/, proeven/

@@ -63,6 +63,11 @@ describe('overlayScript', () => {
     expect(script).not.toContain('.demo-card.visible');
     expect(script).toContain('html.demotale-cover::before');
     expect(script).toContain("sessionStorage.getItem(COVER_KEY) === 'off'");
+    // addInitScript can run before <html> exists. Returning then would skip the cover until
+    // DOMContentLoaded; a MutationObserver paints as soon as the element appears, before first paint.
+    expect(script).toContain('new MutationObserver');
+    expect(script).toContain('coverWaiter.observe(document, { childList: true })');
+    expect(script).not.toContain('if (!document.documentElement) return;');
   });
 
   it('survives a theme value containing a quote instead of breaking the script', () => {
@@ -79,6 +84,112 @@ describe('overlayScript', () => {
     expect(script).toContain('pickCaptionEdge');
     expect(script).toContain('captionBox');
     expect(script).not.toContain('getBoundingClientRect');
+  });
+
+  it('installs the API when <html> is still missing, and paints the cover as soon as it appears', () => {
+    const tokens = new Set<string>();
+    const html = {
+      classList: {
+        add: (name: string) => {
+          tokens.add(name);
+        },
+        remove: (name: string) => {
+          tokens.delete(name);
+        },
+      },
+      appendChild: (node: unknown) => node,
+    };
+    const created: Array<{ id: string }> = [];
+    let observerCb: (() => void) | undefined;
+    const document = {
+      documentElement: null as typeof html | null,
+      head: null,
+      body: null,
+      getElementById: () => null,
+      createElement: () => {
+        const el = { id: '', textContent: '' };
+        created.push(el);
+        return el;
+      },
+      addEventListener: () => {},
+    };
+    let observed: { target: unknown; options: unknown } | undefined;
+    class FakeObserver {
+      constructor(cb: () => void) {
+        observerCb = cb;
+      }
+      observe(target: unknown, options: unknown) {
+        observed = { target, options };
+      }
+      disconnect() {}
+    }
+    const window: { __demo?: unknown } = {};
+    const sessionStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+
+    expect(() =>
+      new Function('window', 'document', 'sessionStorage', 'MutationObserver', script)(
+        window,
+        document,
+        sessionStorage,
+        FakeObserver,
+      ),
+    ).not.toThrow();
+    expect(window.__demo).toBeTruthy();
+    expect(observerCb).toBeTypeOf('function');
+    expect(observed).toEqual({ target: document, options: { childList: true } });
+    expect(tokens.has('demotale-cover')).toBe(false);
+
+    document.documentElement = html;
+    observerCb?.();
+    expect(tokens.has('demotale-cover')).toBe(true);
+    expect(created.some((el) => el.id === '__demo-cover-style')).toBe(true);
+  });
+
+  it('does not paint the cover after hideCard, even if <html> appears later', () => {
+    const tokens = new Set<string>();
+    const html = {
+      classList: {
+        add: (name: string) => {
+          tokens.add(name);
+        },
+        remove: (name: string) => {
+          tokens.delete(name);
+        },
+      },
+      appendChild: (node: unknown) => node,
+    };
+    let observerCb: (() => void) | undefined;
+    const document = {
+      documentElement: null as typeof html | null,
+      head: null,
+      body: null,
+      getElementById: () => null,
+      createElement: () => ({ id: '', textContent: '' }),
+      addEventListener: () => {},
+    };
+    class FakeObserver {
+      constructor(cb: () => void) {
+        observerCb = cb;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    const window: { __demo?: unknown } = {};
+    const sessionStorage = {
+      getItem: () => 'off',
+      setItem: () => {},
+      removeItem: () => {},
+    };
+
+    new Function('window', 'document', 'sessionStorage', 'MutationObserver', script)(
+      window,
+      document,
+      sessionStorage,
+      FakeObserver,
+    );
+    document.documentElement = html;
+    observerCb?.();
+    expect(tokens.has('demotale-cover')).toBe(false);
   });
 });
 

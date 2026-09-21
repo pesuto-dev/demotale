@@ -221,13 +221,30 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     state.note.classList.toggle('note-top', edge === 'bottom');
   }
 
+  let coverWaiter = null;
+
   function dismissed() {
     try { return sessionStorage.getItem(COVER_KEY) === 'off'; } catch { return false; }
   }
 
   function paintHtmlCover() {
+    const html = document.documentElement;
+    if (!html) {
+      // addInitScript can run before the parser has created <html>. Returning here would skip
+      // the cover until DOMContentLoaded, and a deferred script can paint the application in
+      // that gap. MutationObserver callbacks run before the next paint.
+      if (!coverWaiter) {
+        coverWaiter = new MutationObserver(() => { paintHtmlCover(); });
+        coverWaiter.observe(document, { childList: true });
+      }
+      return;
+    }
+    if (coverWaiter) {
+      coverWaiter.disconnect();
+      coverWaiter = null;
+    }
     if (dismissed()) {
-      document.documentElement.classList.remove('demotale-cover');
+      html.classList.remove('demotale-cover');
       return;
     }
     if (!document.getElementById(COVER_STYLE_ID)) {
@@ -235,13 +252,14 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
       style.id = COVER_STYLE_ID;
       style.textContent = 'html.demotale-cover::before{content:"";position:fixed;inset:0;background:'
         + CARD_SURFACE + ';z-index:2147483647;pointer-events:none;}';
-      (document.head || document.documentElement).appendChild(style);
+      (document.head || html).appendChild(style);
     }
-    document.documentElement.classList.add('demotale-cover');
+    html.classList.add('demotale-cover');
   }
 
   function clearHtmlCover() {
-    document.documentElement.classList.remove('demotale-cover');
+    const html = document.documentElement;
+    if (html) html.classList.remove('demotale-cover');
   }
 
   // Before body exists, and so before the overlay can mount: this is what the first video frame

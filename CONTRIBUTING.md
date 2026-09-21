@@ -38,8 +38,11 @@ Features that make it easier to say what is seeded, stubbed or hidden will be.
 
 ## Tests
 
-`npm test` runs vitest. Unit tests only; the end-to-end proof is `npm run example`, which records the
-example application and is what CI runs.
+`npm test` runs vitest. Most of it is unit tests. The overlay init script is also exercised in a
+real Chromium (`test/overlay-init.test.ts`), because `addInitScript` can run before `<html>` exists
+and a string test cannot see that. You need Chromium for that file (`npx playwright install chromium`).
+The end-to-end proof is `npm run example`, which records the example application and is what CI's
+record job runs.
 
 A test earns its place by pinning down something that could plausibly regress and would be hard to
 notice: which files end up in the published tarball, that the overlay still refuses pointer events,
