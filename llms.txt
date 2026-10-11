@@ -25,8 +25,9 @@ npx demotale init
 ```
 
 Requires Node >= 22.12. Chromium comes with the package. Put ffmpeg on PATH, or
-`npm i -D ffmpeg-static`. If Chromium is missing: `npx demotale setup`. Diagnose with
-`npx demotale doctor` (installs nothing itself).
+`npm i -D ffmpeg-static`. npm 11 only runs the Chromium postinstall when scripts are allowed
+(`npm install-scripts approve @pesuto/demotale`). If Chromium is missing: `npx demotale setup`.
+Diagnose with `npx demotale doctor` (installs nothing itself).
 
 ## Agent loop
 

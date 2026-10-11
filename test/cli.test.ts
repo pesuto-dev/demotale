@@ -154,6 +154,10 @@ describe('init', () => {
     const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
     expect(gitignore).toContain('.auth/');
     expect(gitignore).toContain('credential');
+    expect(gitignore.match(/Playwright leaves these behind/g)).toHaveLength(1);
+    expect(gitignore).toContain(
+      '# Playwright leaves these behind\ntest-results/\nplaywright-report/',
+    );
   });
 
   // Asking git, not reading the file. The first version of this wrote `.auth/    # why`, which

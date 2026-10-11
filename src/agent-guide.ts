@@ -67,6 +67,9 @@ POINT IT AT THE REAL APP
   \`baseUrl\`, \`webServer.url\` and \`webServer.command\` are three settings for one thing and must
   agree. \`doctor\` checks all three and says which is wrong, so run it after the edit rather than
   reasoning about it.
+  A scenario that starts and stops the application itself (an offline moment, a restart) sets
+  \`webServer: false\`. Doctor then warns if the address is down instead of failing, and a recording
+  will not start the server for you.
   What \`doctor\` cannot know is whether the program answering that address is yours. After a check,
   read \`result.scenarios[].pages\` in the JSON, or the \`filmed\` lines in the text: the address and
   the page title that ended up on film. Measured: a green check that had filmed an unrelated server.
@@ -96,7 +99,8 @@ WRITING THE SCENARIO
   handle of its own, reach it through a child, which takes a role as readily as a test id:
       page.locator('.tile', { has: page.getByRole('heading', { name: 'With priority' }) })
   Keep a step short enough to stay on one line. A longer sentence wraps, and the second line lands on
-  the page underneath. The check frames are where you see it.
+  the page underneath. \`check\` reports that as \`caption-wraps\`, with the step and the text.
+  \`say()\` inside a step keeps that step's number. Pass \`{ badge: '' }\` to drop it.
   \`chapter()\` is synchronous and paints nothing. Everything else is awaited.
   Delete the \`demo/example.demo.ts\` that \`init\` wrote; \`record\` films every \`*.demo.ts\` it finds.
   The output file is named after the \`test('...')\` title, not after the file.
@@ -108,8 +112,10 @@ DATA, AND SAYING WHAT IS NOT REAL
   Seed through the application, never by editing it. Where there is no seam (data hardcoded in a
   service, a stubbed frontend), film what is there and label it instead.
   \`demo.note('Stubbed depot data, no real parcels')\` puts a standing label in the corner for the
-  whole recording. Use it whenever what is on screen is not what it appears to be: mocked, seeded,
-  made up. A demo that overstates is worse than no demo, and this is the cheapest way to be honest.
+  whole recording. It sits opposite the subtitle. When a spotlight would cover it, it moves to
+  another corner until the ring is gone. Use it whenever what is on screen is not what it appears
+  to be: mocked, seeded, made up. A demo that overstates is worse than no demo, and this is the
+  cheapest way to be honest.
 
 STILLS FOR DOCS
   A still is a screenshot of the real page, without the overlay. Mark the moment after the assertion:

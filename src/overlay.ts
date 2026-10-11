@@ -63,6 +63,45 @@ export function pickCaptionEdge(
   return preferred;
 }
 
+/** Where a standing note can sit. Left, opposite the subtitle, unless a spotlight is already there. */
+export type NoteCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
+/** The corner opposite the subtitle, on the left. That is where a note sits when nothing else claims it. */
+export function preferredNoteCorner(captionEdge: 'top' | 'bottom'): NoteCorner {
+  return captionEdge === 'top' ? 'bottom-left' : 'top-left';
+}
+
+/**
+ * Preferred corner unless an obstacle sits on it.
+ *
+ * Same edge first, other end, then the other edge. A note that moved onto the subtitle would only
+ * trade one covering for another, so the caption is an obstacle too. When every corner is taken the
+ * preferred one stays: a near-full-viewport highlight has nowhere to go.
+ */
+export function pickNoteCorner(
+  preferred: NoteCorner,
+  boxes: Record<NoteCorner, OverlayBox>,
+  obstacles: readonly OverlayBox[],
+  gap = 12,
+): NoteCorner {
+  const vertical = preferred.startsWith('top') ? 'top' : 'bottom';
+  const otherVertical = vertical === 'top' ? 'bottom' : 'top';
+  const horizontal = preferred.endsWith('right') ? 'right' : 'left';
+  const otherHorizontal = horizontal === 'left' ? 'right' : 'left';
+  const order: NoteCorner[] = [
+    (vertical + '-' + horizontal) as NoteCorner,
+    (vertical + '-' + otherHorizontal) as NoteCorner,
+    (otherVertical + '-' + horizontal) as NoteCorner,
+    (otherVertical + '-' + otherHorizontal) as NoteCorner,
+  ];
+
+  for (const corner of order) {
+    const box = boxes[corner];
+    if (obstacles.every((obstacle) => !boxesOverlap(box, obstacle, gap))) return corner;
+  }
+  return preferred;
+}
+
 /** What the injected script hangs on `window.__demo`. */
 export interface DemoOverlay {
   say(text: string, badge?: string): void;
@@ -139,15 +178,17 @@ function css(theme: Theme): string {
                               width 260ms ease, height 260ms ease;
     }
     #${ID} .demo-ring.visible { opacity: 1; }
-    /* Opposite the subtitle, so a standing note never collides with the line being read. */
+    /* Opposite the subtitle. A spotlight that would cover it moves it to another corner. */
     #${ID} .demo-note {
-      position: absolute; left: 24px;
+      position: absolute;
       max-width: 40%; padding: 8px 14px; border-radius: ${theme.radius}px;
       background: ${theme.surface}; color: ${theme.text};
       font-size: ${Math.round(theme.captionFontSize * 0.7)}px; line-height: 1.4; font-weight: 500;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-      opacity: 0; transition: opacity 260ms ease, top 260ms ease, bottom 260ms ease;
+      opacity: 0; transition: opacity 260ms ease, top 260ms ease, bottom 260ms ease, left 260ms ease, right 260ms ease;
     }
+    #${ID} .demo-note.note-left { left: 24px; right: auto; }
+    #${ID} .demo-note.note-right { right: 24px; left: auto; }
     #${ID} .demo-note.note-bottom { bottom: 24px; top: auto; }
     #${ID} .demo-note.note-top { top: 24px; bottom: auto; }
     #${ID}.still-clean .demo-caption,
@@ -201,6 +242,9 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
   const state = {};
   const boxesOverlap = ${boxesOverlap.toString()};
   const pickCaptionEdge = ${pickCaptionEdge.toString()};
+  const pickNoteCorner = ${pickNoteCorner.toString()};
+  const preferredNoteCorner = ${preferredNoteCorner.toString()};
+  const NOTE_MARGIN = 24;
 
   function captionBox(edge, width, height) {
     return {
@@ -211,14 +255,57 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     };
   }
 
+  function noteBox(corner, width, height) {
+    const top = corner.indexOf('top') === 0;
+    const left = corner.endsWith('left');
+    return {
+      x: left ? NOTE_MARGIN : window.innerWidth - NOTE_MARGIN - width,
+      y: top ? NOTE_MARGIN : window.innerHeight - NOTE_MARGIN - height,
+      width: width,
+      height: height
+    };
+  }
+
+  function setNoteCorner(corner) {
+    if (!state.note) return;
+    state.note.classList.toggle('note-top', corner.indexOf('top') === 0);
+    state.note.classList.toggle('note-bottom', corner.indexOf('bottom') === 0);
+    state.note.classList.toggle('note-left', corner.endsWith('left'));
+    state.note.classList.toggle('note-right', corner.endsWith('right'));
+  }
+
+  function placeNote(captionEdge) {
+    if (!state.note) return;
+    const preferred = preferredNoteCorner(captionEdge);
+    if (!state.note.classList.contains('visible')) {
+      setNoteCorner(preferred);
+      return;
+    }
+    const width = state.note.offsetWidth;
+    const height = state.note.offsetHeight;
+    const boxes = {
+      'top-left': noteBox('top-left', width, height),
+      'top-right': noteBox('top-right', width, height),
+      'bottom-left': noteBox('bottom-left', width, height),
+      'bottom-right': noteBox('bottom-right', width, height)
+    };
+    const obstacles = [];
+    if (state.ringBox) obstacles.push(state.ringBox);
+    if (state.caption && state.caption.classList.contains('visible')) {
+      obstacles.push(captionBox(
+        captionEdge,
+        state.caption.offsetWidth,
+        state.caption.offsetHeight
+      ));
+    }
+    setNoteCorner(pickNoteCorner(preferred, boxes, obstacles, RING_GAP));
+  }
+
   function setCaptionEdge(edge) {
     if (!state.caption) return;
     state.caption.classList.toggle('edge-top', edge === 'top');
     state.caption.classList.toggle('edge-bottom', edge === 'bottom');
-    if (!state.note) return;
-    // Note stays opposite the subtitle.
-    state.note.classList.toggle('note-bottom', edge === 'top');
-    state.note.classList.toggle('note-top', edge === 'bottom');
+    placeNote(edge);
   }
 
   let coverWaiter = null;
@@ -293,7 +380,7 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
     caption.append(badge, text);
 
     const note = document.createElement('div');
-    note.className = 'demo-note ' + (PREFERRED === 'top' ? 'note-bottom' : 'note-top');
+    note.className = 'demo-note ' + (PREFERRED === 'top' ? 'note-bottom note-left' : 'note-top note-left');
 
     const card = document.createElement('div');
     card.className = dismissed() ? 'demo-card hidden' : 'demo-card';
@@ -376,19 +463,28 @@ export function overlayScript(theme: Theme, redact: readonly string[] = []): str
       }
       state.note.textContent = text;
       state.note.classList.add('visible');
+      const edge = state.caption && state.caption.classList.contains('edge-bottom') ? 'bottom' : 'top';
+      placeNote(edge);
     },
     ring(box) {
       if (!raise()) return;
       if (!box) {
+        state.ringBox = null;
         state.ring.classList.remove('visible');
         setCaptionEdge(PREFERRED);
         return;
       }
       const pad = 6;
-      state.ring.style.left = (box.x - pad) + 'px';
-      state.ring.style.top = (box.y - pad) + 'px';
-      state.ring.style.width = (box.width + pad * 2) + 'px';
-      state.ring.style.height = (box.height + pad * 2) + 'px';
+      state.ringBox = {
+        x: box.x - pad,
+        y: box.y - pad,
+        width: box.width + pad * 2,
+        height: box.height + pad * 2
+      };
+      state.ring.style.left = state.ringBox.x + 'px';
+      state.ring.style.top = state.ringBox.y + 'px';
+      state.ring.style.width = state.ringBox.width + 'px';
+      state.ring.style.height = state.ringBox.height + 'px';
       state.ring.classList.add('visible');
       if (!state.caption.classList.contains('visible')) {
         setCaptionEdge(PREFERRED);

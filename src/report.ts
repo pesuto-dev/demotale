@@ -37,6 +37,7 @@ export type ProblemCode =
   | 'assertion-failed'
   | 'scenario-failed'
   | 'wrong-origin'
+  | 'caption-wraps'
   | 'no-scenario-matched'
   | 'record-failed'
   | 'no-recording'
@@ -99,30 +100,28 @@ export interface ConfigEcho {
   scenarios: string;
   output: string;
   storageState: string;
-  webServer?: { command: string; url?: string }[];
+  /** `false` when the scenario starts the application itself. Absent when nothing is configured. */
+  webServer?: { command: string; url?: string }[] | false;
 }
 
 export function configEcho(config: ResolvedConfig, root: string): ConfigEcho {
-  const servers =
-    config.webServer === undefined
-      ? []
-      : Array.isArray(config.webServer)
-        ? config.webServer
-        : [config.webServer];
-
-  return {
+  const echo: ConfigEcho = {
     baseUrl: config.baseUrl,
     scenarios: resolve(root, config.scenarios),
     output: resolve(root, config.output),
     storageState: resolve(root, config.storageState),
-    ...(servers.length === 0
-      ? {}
-      : {
-          webServer: servers.map((server) => ({
-            command: server.command,
-            ...(typeof server.url === 'string' ? { url: server.url } : {}),
-          })),
-        }),
+  };
+
+  if (config.webServer === false) return { ...echo, webServer: false };
+  if (config.webServer === undefined) return echo;
+
+  const servers = Array.isArray(config.webServer) ? config.webServer : [config.webServer];
+  return {
+    ...echo,
+    webServer: servers.map((server) => ({
+      command: server.command,
+      ...(typeof server.url === 'string' ? { url: server.url } : {}),
+    })),
   };
 }
 

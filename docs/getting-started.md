@@ -26,13 +26,17 @@ npx demotale init
 | `demotale.config.ts` | Where your app runs, how fast the demo goes, what is never in frame |
 | `playwright.config.ts` | Generated from the above. Not meant to be edited |
 | `demo/example.demo.ts` | A scenario that records the front page |
-| `AGENTS.md` | Five lines pointing at `npx demotale agent-guide`. `--no-agent` skips this |
+| `AGENTS.md` | Five lines pointing at `npx demotale agent-guide`. `--no-agent` skips this and sets `agentGuide: false`, so doctor stays quiet |
 | `.gitignore` lines and npm scripts | Including `.auth/`, which holds a credential |
 
 `--ci` writes `.github/workflows/demotale.yml` if that file is not already there. Skip it until
 you want CI to re-record; `doctor` will name the command when the file is missing.
 
 If install scripts were skipped, or doctor reports a missing browser: `npx demotale setup`.
+
+npm 11 skips the postinstall that downloads Chromium unless you allow it
+(`npm install-scripts approve @pesuto/demotale`, or an `allowScripts` entry). The warning is easy
+to miss, and then Chromium was never downloaded. `npx demotale setup` fetches it.
 
 ## Point it at your app
 

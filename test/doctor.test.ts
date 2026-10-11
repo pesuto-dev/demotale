@@ -247,6 +247,32 @@ describe('doctor', () => {
     expect(agent?.fix).toBe('npx demotale init');
   });
 
+  it('stays quiet about AGENTS.md when the config opted out', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://127.0.0.1:9', agentGuide: false }`);
+
+    const { checks } = await collectChecks(root);
+    const [agent] = find(checks, 'agent');
+
+    expect(agent?.status).toBe('ok');
+    expect(agent?.fix).toBeUndefined();
+    expect(agent?.detail).toContain('agentGuide: false');
+  });
+
+  it('warns, and does not fail, when the scenario starts the application itself', async () => {
+    fakePlaywright({ version: '1.49.0' });
+    config(`{ baseUrl: 'http://127.0.0.1:9', webServer: false }`);
+
+    const { checks } = await collectChecks(root);
+    const [base] = find(checks, 'baseUrl');
+
+    expect(base?.status).toBe('warn');
+    expect(base?.code).toBeUndefined();
+    expect(base?.detail).toContain('webServer is false');
+    expect(find(checks, 'webServer')[0]?.detail).toContain('scenario');
+    expect(checks.some((check) => check.status === 'problem')).toBe(false);
+  });
+
   it('is happy when AGENTS.md already points at the guide', async () => {
     fakePlaywright({ version: '1.49.0' });
     config(`{ baseUrl: 'http://localhost:4173' }`);

@@ -52,6 +52,11 @@ await demo.hide();
 Reading time is calculated from the length of the line: about fifteen characters a second, never
 under 1.9 seconds and never over 9. That has held up for Dutch and English subtitles alike.
 
+`say()` inside a `step()` keeps that step's number, so a line of context after the action does not
+drop the badge. Pass `{ badge: '' }` when that line should be unnumbered. Keep the sentence on one
+line: `check` reports `caption-wraps` when the caption paints a second line, which covers the page
+underneath.
+
 ### Steps
 
 ```ts
@@ -91,6 +96,9 @@ await demo.note();   // take it away
 
 A demo that overstates is worse than no demo. Use this whenever what is on screen is not what it
 appears to be: seeded data, a staging environment, a stubbed integration.
+
+The label sits in the corner opposite the subtitle. When a spotlight would cover it, it moves to
+another corner for as long as the ring is up, then comes back.
 
 ```ts
 await demo.redact(page.getByTestId('customer-name'));

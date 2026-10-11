@@ -93,6 +93,12 @@ export async function renderCommand(
 
   for (const file of payload.files) {
     say(`done: ${relative(file.file, root)} (${megabytes(file.bytes)})`);
+    if (file.file.endsWith('.gif') && file.bytes >= 8 * 1024 * 1024) {
+      say(
+        `  ${megabytes(file.bytes)} is heavy for a page. video.gifWidth and video.gifFps shrink ` +
+          'it (defaults are 960 and 15).',
+      );
+    }
   }
   return 0;
 }

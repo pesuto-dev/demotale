@@ -13,7 +13,13 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { formatReport, looksLikeLogin, wrongOrigin, type CheckReport } from '../check.js';
+import {
+  formatReport,
+  looksLikeLogin,
+  wrappedCaptions,
+  wrongOrigin,
+  type CheckReport,
+} from '../check.js';
 import { loadConfig } from '../config.js';
 import { configEcho, emitJson, jsonReport, type Problem, type ProblemCode } from '../report.js';
 import { flagBoolean, type Args } from './args.js';
@@ -109,6 +115,24 @@ function wrongOriginProblem(report: CheckReport): Problem[] {
  * recording starts it itself, the dry run is the first thing that sees the login. Without this the
  * report blames the locator, and the author goes looking for a typo in a scenario that is fine.
  */
+/**
+ * A caption that wrapped, as a problem an agent or CI can act on.
+ *
+ * The frames already show it. Opening every one and judging the line break by eye is the step this
+ * replaces: the caption was painted at the real viewport, so its height is a measurement.
+ */
+function captionWrapProblems(report: CheckReport): Problem[] {
+  return wrappedCaptions(report).map((step) => ({
+    code: 'caption-wraps' as const,
+    message:
+      `The caption wraps to ${String(step.captionLines)} lines` +
+      (step.badge === undefined ? '' : ` in step ${step.badge}`) +
+      ` ("${step.text}"). The second line covers the page underneath. Shorten it to one line.`,
+    scenario: report.scenario,
+    ...(step.badge === undefined ? {} : { step: step.badge }),
+  }));
+}
+
 function loginProblem(report: CheckReport): Problem[] {
   const filmed = report.pages.filter((page) => looksLikeLogin(page.url));
   if (filmed.length === 0 || report.ok) return [];
@@ -198,6 +222,7 @@ export async function checkCommand(args: Args, root = process.cwd()): Promise<nu
     ...loginProblem(report),
     ...(report.ok ? [] : [problemFrom(report)]),
     ...wrongOriginProblem(report),
+    ...captionWrapProblems(report),
   ]);
 
   if (json) {
@@ -212,19 +237,24 @@ export async function checkCommand(args: Args, root = process.cwd()): Promise<nu
   }
 
   let failed = 0;
+  let wraps = 0;
   for (const { report, dir } of reports) {
     say('');
     for (const line of formatReport(report, relative(dir, root))) say(line);
     if (!report.ok) failed += 1;
+    wraps += wrappedCaptions(report).length;
   }
 
   say('');
   say(
-    failed === 0
+    failed === 0 && wraps === 0
       ? `${reports.length} scenario${reports.length === 1 ? '' : 's'} checked in ` +
           `${(elapsed / 1000).toFixed(1)}s. Run "demotale record" to film it.`
-      : `${failed} of ${reports.length} failed in ${(elapsed / 1000).toFixed(1)}s.`,
+      : failed === 0
+        ? `${String(wraps)} caption${wraps === 1 ? '' : 's'} wrap onto a second line. Shorten ` +
+          `${wraps === 1 ? 'it' : 'them'} so the subtitle stays on one.`
+        : `${failed} of ${reports.length} failed in ${(elapsed / 1000).toFixed(1)}s.`,
   );
 
-  return failed === 0 ? 0 : 1;
+  return failed === 0 && wraps === 0 ? 0 : 1;
 }

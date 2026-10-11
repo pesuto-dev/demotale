@@ -1,6 +1,6 @@
 {
   "name": "@pesuto/demotale",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "Product demos that don't go stale. Write the walkthrough once; ship a video, a gif, or pictures. CI films it again when the UI changes.",
   "keywords": [
     "demo",

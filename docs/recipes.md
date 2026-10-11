@@ -111,7 +111,8 @@ video: { formats: ['mp4', 'gif'], gifWidth: 720, gifFps: 10 },
 ```
 
 A gif of a full 1440-pixel viewport at 15 frames a second comes out around nine megabytes. Capped at
-720 and 10 it is closer to two, which is what a page at the top of a repository can carry.
+720 and 10 it is closer to two, which is what a page at the top of a repository can carry. `gifWidth`
+defaults to 960 and `gifFps` to 15. A gif of 8 MB or more says so when it is written.
 
 `demotale gif` reuses the last recording when there is one, so `video` then `gif` does not play the
 click path twice. Name a scenario file and it records that one instead of reusing.
@@ -160,9 +161,25 @@ theme: {
 ```
 
 Two themes ship, `dark` and `light`. Both are ordinary objects, so you can also import one and spread
-it. `captionPosition` is the preferred edge. When a spotlight would sit under that bar, the overlay
-flips to the other side until the ring clears. `bottom` exists, but on a dashboard that is where new
+it. `captionPosition` is the preferred edge (`'top'` or `'bottom'`, default `top`). `captionOffset`
+is the distance from that edge, 64 by default. When a spotlight would sit under that bar, the overlay
+flips to the other side until the ring clears. A standing `note()` sits in the opposite corner and
+moves if the spotlight would cover it. `bottom` exists, but on a dashboard that is where new
 rows appear.
+
+## The scenario starts the app
+
+Some recordings have to stop the server in the middle: an offline moment, a restart, a "connection
+lost" indicator. `webServer` starts the application once and holds it for the whole run, so the
+scenario does it instead, from `test.beforeAll` and from inside a step.
+
+```ts
+webServer: false,
+```
+
+Doctor then warns if `baseUrl` is down, and does not fail. A recording will not start the server
+for you. The scenario is a Playwright test, so `createServer` (or stopping and starting whatever
+you already use) works the same way it would in any other test.
 
 ## Recording against a different port
 

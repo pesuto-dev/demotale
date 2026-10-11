@@ -116,6 +116,41 @@ describe('the frame that ends a step', () => {
     expect(events).toEqual(['click cookie banner', 'frame 01-result.png']);
   });
 
+  it('keeps the step number when say() runs inside the step', async () => {
+    await demo.step('An analyst submits a new plan.', async () => {
+      await demo.say('The plan is now in Ready.');
+    });
+
+    const steps = demo.checkReport('t', 's').steps;
+    expect(steps[1]).toMatchObject({ kind: 'say', badge: '1', text: 'The plan is now in Ready.' });
+  });
+
+  it('leaves say() unnumbered outside a step', async () => {
+    await demo.say('Someone picks the order.');
+    expect(demo.checkReport('t', 's').steps[0]?.badge).toBeUndefined();
+  });
+
+  it('drops the number when say() is asked to', async () => {
+    await demo.step('An analyst submits a new plan.', async () => {
+      await demo.say('The plan is now in Ready.', { badge: '' });
+    });
+
+    expect(demo.checkReport('t', 's').steps[1]?.badge).toBeUndefined();
+  });
+
+  it('records how many lines the caption painted', async () => {
+    const page = fakePage(events);
+    page.evaluate = (async (fn: (...args: never[]) => unknown) => {
+      if (String(fn).includes('demo-text')) return 2.04;
+      return undefined;
+    }) as Page['evaluate'];
+    const measuring = new Demo(page, resolveConfig(), { mode: 'check', frameDir });
+
+    await measuring.step('A long line.', async () => {});
+
+    expect(measuring.checkReport('t', 's').steps[0]?.captionLines).toBe(2);
+  });
+
   it('leaves the next step to take its own', async () => {
     await demo.step('Filter.', async () => {
       await demo.click(fakeLocator(events, 'filter'));

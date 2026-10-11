@@ -72,6 +72,7 @@ describe('resolveConfig', () => {
     expect(config.video.formats).toEqual(['mp4']);
     expect(config.redact).toEqual([]);
     expect(config.theme.captionPosition).toBe('top');
+    expect(config.agentGuide).toBe(true);
     expect(config.stills).toEqual({ dir: './demo/stills', number: true });
   });
 
@@ -79,6 +80,12 @@ describe('resolveConfig', () => {
     const config = resolveConfig({ video: { crf: 18 }, viewport: { width: 1920, height: 1080 } });
     expect(config.video).toEqual({ fps: 30, crf: 18, formats: ['mp4'], gifWidth: 960, gifFps: 15 });
     expect(config.viewport).toEqual({ width: 1920, height: 1080 });
+  });
+
+  it('lets the scenario own the server, and opt out of the agent guide', () => {
+    const config = resolveConfig({ webServer: false, agentGuide: false });
+    expect(config.webServer).toBe(false);
+    expect(config.agentGuide).toBe(false);
   });
 
   it('takes a theme by name', () => {
