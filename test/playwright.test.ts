@@ -57,4 +57,8 @@ describe('definePlaywrightConfig', () => {
     expect(config.use?.launchOptions).toEqual({ slowMo: 120 });
     expect(recordProject(config).use?.video).toEqual({ mode: 'on', size: { width: 1440, height: 900 } });
   });
+
+  it('starts nothing when the scenario owns the server', () => {
+    expect(definePlaywrightConfig({ webServer: false }).webServer).toBeUndefined();
+  });
 });

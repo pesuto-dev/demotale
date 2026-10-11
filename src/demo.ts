@@ -381,10 +381,17 @@ export class Demo {
     };
   }
 
-  /** Show a subtitle and leave it standing, for as long as it takes to read it. */
+  /**
+   * Show a subtitle and leave it standing, for as long as it takes to read it.
+   *
+   * Inside a `step()`, the step number stays: a second line of context should not make the viewer
+   * lose their place. Pass `badge` to replace it, or `{ badge: '' }` to drop it.
+   */
   async say(text: string, opts: { badge?: string; hold?: number } = {}): Promise<void> {
-    this.mark({ kind: 'say', text, ...(opts.badge === undefined ? {} : { badge: opts.badge }) });
-    await this.showCaption(text, opts.badge ?? '', opts.hold);
+    const badge =
+      opts.badge !== undefined ? opts.badge : this.stepDepth > 0 ? String(this.stepNumber) : '';
+    this.mark({ kind: 'say', text, ...(badge === '' ? {} : { badge }) });
+    await this.showCaption(text, badge, opts.hold);
   }
 
   private async showCaption(text: string, badge: string, hold?: number): Promise<void> {
@@ -394,8 +401,36 @@ export class Demo {
       (arg) => (window as OverlayWindow).__demo?.say(arg.text, arg.badge),
       { text, badge },
     );
+    if (this.mode === 'check') {
+      const lines = await this.captionLineCount();
+      const step = this.currentStep;
+      if (step !== undefined && lines !== undefined) step.captionLines = lines;
+    }
     await this.shoot('caption');
     await this.pause(hold ?? readingTimeMs(text));
+  }
+
+  /**
+   * How many lines the caption's text painted.
+   *
+   * The element is the text itself, not the padded bar, so one line is one line-height. Rounding
+   * absorbs a fraction of a pixel. A dry run that cannot read the page leaves this unmeasured
+   * rather than inventing a wrap.
+   */
+  private async captionLineCount(): Promise<number | undefined> {
+    const lines = await this.page
+      .evaluate(() => {
+        const text = document.querySelector('#__demo-layer .demo-text');
+        if (!(text instanceof HTMLElement) || text.textContent === '') return undefined;
+        const line = Number.parseFloat(window.getComputedStyle(text).lineHeight);
+        if (!Number.isFinite(line) || line <= 0) return undefined;
+        return text.getBoundingClientRect().height / line;
+      })
+      .catch(() => undefined);
+
+    if (typeof lines !== 'number' || !Number.isFinite(lines)) return undefined;
+    // A fraction over one line is a descender, not a wrap. Past a line and a half it is a second line.
+    return lines > 1.5 ? Math.round(lines) : 1;
   }
 
   /** Take the subtitle away, just before a title card for instance. */

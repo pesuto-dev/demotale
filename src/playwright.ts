@@ -27,7 +27,7 @@ function webServerOn(
   webServer: DemotaleConfig['webServer'],
   baseUrl: string,
 ): DemotaleConfig['webServer'] {
-  if (webServer === undefined || Array.isArray(webServer)) return webServer;
+  if (webServer === undefined || webServer === false || Array.isArray(webServer)) return webServer;
   if (typeof webServer.url !== 'string') return webServer;
 
   const port = new URL(baseUrl).port;
@@ -48,10 +48,9 @@ function webServerOn(
  * an application that takes twenty seconds to boot would cost more than the check itself. So check
  * reuses whatever is already running, and the report says so.
  */
-function reusableFor(
-  webServer: NonNullable<DemotaleConfig['webServer']>,
-  check: boolean,
-): NonNullable<DemotaleConfig['webServer']> {
+type PlaywrightWebServer = Exclude<NonNullable<DemotaleConfig['webServer']>, false>;
+
+function reusableFor(webServer: PlaywrightWebServer, check: boolean): PlaywrightWebServer {
   if (!check) return webServer;
   if (Array.isArray(webServer)) {
     return webServer.map((server) => ({ ...server, reuseExistingServer: true }));

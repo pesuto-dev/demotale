@@ -70,16 +70,42 @@ function updateGitignore(root: string, result: InitResult): void {
 
   // The reason goes on its own line above the pattern. gitignore has no trailing comments: written
   // as `.auth/    # ...` the whole string is the pattern, it matches nothing, and the file that was
-  // supposed to be kept out of git is a stored browser session for a real account.
-  const block = [
-    '',
-    '# demotale',
-    ...missing.flatMap(([pattern, why]) => [`# ${why}`, pattern]),
-    '',
-  ];
+  // supposed to be kept out of git is a stored browser session for a real account. Two patterns that
+  // share a reason share that one line, so "Playwright leaves these behind" is not written twice.
+  const block = ['', '# demotale'];
+  let previousWhy: string | undefined;
+  for (const [pattern, why] of missing) {
+    if (why !== previousWhy) {
+      block.push(`# ${why}`);
+      previousWhy = why;
+    }
+    block.push(pattern);
+  }
+  block.push('');
   const separator = existing === '' || existing.endsWith('\n') ? '' : '\n';
   fs.writeFileSync(file, existing + separator + block.join('\n'));
   result.written.push(path.relative(root, file));
+}
+
+/**
+ * Records that this project asked not to have the agent block.
+ *
+ * Only a config this run just wrote: init never rewrites one that was already there. Doctor reads
+ * the key and stays quiet, instead of suggesting an `init` that would undo the choice.
+ */
+function markAgentOptOut(root: string): void {
+  const file = path.join(root, 'demotale.config.ts');
+  const source = fs.readFileSync(file, 'utf8');
+  const needle = 'export default defineConfig({';
+  if (source.includes('agentGuide:') || !source.includes(needle)) return;
+
+  fs.writeFileSync(
+    file,
+    source.replace(
+      needle,
+      `${needle}\n  // init --no-agent. Doctor will not ask for the AGENTS.md lines.\n  agentGuide: false,\n`,
+    ),
+  );
 }
 
 function updatePackageScripts(root: string, result: InitResult): void {
@@ -136,6 +162,7 @@ export function init(root = process.cwd(), options: { agent?: boolean; ci?: bool
   const agent = options.agent !== false;
   const result: InitResult = { written: [], skipped: [] };
   copyTree(TEMPLATE_DIR, root, result, root);
+  if (!agent && result.written.includes('demotale.config.ts')) markAgentOptOut(root);
   updateGitignore(root, result);
   updatePackageScripts(root, result);
   const agents = agent ? updateAgentsFile(root, result) : 'skipped';

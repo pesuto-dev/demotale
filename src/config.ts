@@ -58,10 +58,16 @@ export interface DemotaleConfig {
   /** Budget for one scenario, in milliseconds. */
   timeout?: number;
   /**
-   * Passed to Playwright unchanged. Record against a freshly started application: a recording
-   * against whatever happened to be running is a recording against unknown data.
+   * Passed to Playwright unchanged, or `false` when the scenario starts and stops the application
+   * itself. A recording then will not start a server. Doctor warns if the address is down, and
+   * does not fail: there is nothing for it to start.
    */
-  webServer?: PlaywrightTestConfig['webServer'];
+  webServer?: PlaywrightTestConfig['webServer'] | false;
+  /**
+   * Whether doctor should expect `AGENTS.md` to point at `demotale agent-guide`.
+   * `init --no-agent` writes `false`. Missing means yes.
+   */
+  agentGuide?: boolean;
   /** A browser session stored once by `demotale auth`. Missing is a supported state. */
   storageState?: string;
   /** CSS selectors that are never in frame, whatever the click path does. */
@@ -81,7 +87,8 @@ export interface ResolvedConfig {
   speed: number;
   slowMo: number;
   timeout: number;
-  webServer: PlaywrightTestConfig['webServer'];
+  webServer: PlaywrightTestConfig['webServer'] | false;
+  agentGuide: boolean;
   storageState: string;
   redact: string[];
   video: VideoConfig;
@@ -119,6 +126,7 @@ const KNOWN_KEYS: ReadonlySet<string> = new Set([
   'slowMo',
   'timeout',
   'webServer',
+  'agentGuide',
   'storageState',
   'redact',
   'video',
@@ -246,6 +254,10 @@ export function defineConfig(config: DemotaleConfig = {}): DemotaleConfig {
     }
   }
 
+  if (config.agentGuide !== undefined && typeof config.agentGuide !== 'boolean') {
+    fail(`"agentGuide" must be true or false, got ${show(config.agentGuide)}.`);
+  }
+
   if (config.stills !== undefined) {
     if (config.stills === null || typeof config.stills !== 'object' || Array.isArray(config.stills)) {
       fail(`"stills" must be an object, got ${show(config.stills)}.`);
@@ -272,6 +284,7 @@ export function resolveConfig(config: DemotaleConfig = {}): ResolvedConfig {
     slowMo: config.slowMo ?? DEFAULTS.slowMo,
     timeout: config.timeout ?? DEFAULTS.timeout,
     webServer: config.webServer,
+    agentGuide: config.agentGuide ?? true,
     storageState: config.storageState ?? DEFAULTS.storageState,
     redact: config.redact ?? [],
     video: { ...DEFAULT_VIDEO, ...config.video },

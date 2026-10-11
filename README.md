@@ -54,6 +54,10 @@ still happens and you keep the webm; you just do not get an mp4.
 
 If `npm i` ran with `--ignore-scripts`, or doctor reports a missing browser: `npx demotale setup`.
 
+npm 11 does not run the postinstall that downloads Chromium unless the package is allowed to
+(`npm install-scripts approve @pesuto/demotale`, or an `allowScripts` entry). If that warning
+scrolled past, Chromium was never downloaded. `npx demotale setup` fetches it.
+
 Not sure whether the machine is ready? `npx demotale doctor` checks everything that can be missing,
 in ten seconds, and says what to do about each thing. It installs nothing itself.
 
@@ -143,8 +147,8 @@ export default defineConfig({
   webServer: { command: 'npm start', url: 'http://localhost:3000', reuseExistingServer: false },
   speed: 1,
   redact: ['[aria-label="Account"]', '.org-switcher'],
-  video: { formats: ['mp4', 'gif'] },
-  theme: { base: 'dark', accent: '#38bdf8' },
+  video: { formats: ['mp4', 'gif'], gifWidth: 960, gifFps: 15 },
+  theme: { base: 'dark', accent: '#38bdf8', captionPosition: 'top' },
   stills: { dir: './demo/stills', number: true },
 });
 ```
@@ -152,6 +156,17 @@ export default defineConfig({
 Every key has a working default, so `defineConfig({})` is a valid config. A wrong one is a sentence
 naming the key, not a stack trace, and an unknown key is an error rather than something silently
 ignored.
+
+`theme.captionPosition` is `'top'` or `'bottom'` (default `top`). `captionOffset` is the distance
+from that edge. A spotlight that would sit under the bar flips the caption to the other edge until
+the ring clears.
+
+`video.gifWidth` and `video.gifFps` default to 960 and 15. A long recording at those defaults is a
+large gif; `gifWidth: 800` and `gifFps: 8` roughly halves it. A gif of 8 MB or more says so when it
+is written.
+
+`webServer: false` means the scenario starts and stops the application itself. Doctor then warns if
+the address is down, and a recording will not start a server for you.
 
 ## Apps behind a login
 

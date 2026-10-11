@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { overlayScript, pickCaptionEdge, boxesOverlap } from '../src/overlay.js';
+import {
+  overlayScript,
+  pickCaptionEdge,
+  pickNoteCorner,
+  preferredNoteCorner,
+  boxesOverlap,
+  type NoteCorner,
+  type OverlayBox,
+} from '../src/overlay.js';
 import { defaultTheme, lightTheme } from '../src/theme.js';
 
 /**
@@ -26,6 +34,11 @@ describe('overlayScript', () => {
   it('draws its own cursor, because Playwright does not record the real one', () => {
     expect(script).toContain("addEventListener('mousemove'");
     expect(script).toContain('demo-cursor');
+  });
+
+  it('can park the standing note on either side', () => {
+    expect(script).toContain('note-left');
+    expect(script).toContain('note-right');
   });
 
   it('puts the subtitle at the top by default, away from where new rows appear', () => {
@@ -215,5 +228,43 @@ describe('pickCaptionEdge', () => {
   it('treats a gap as overlap, so the subtitle does not graze the frame', () => {
     expect(boxesOverlap(captionTop, { x: 200, y: 130, width: 10, height: 10 }, 12)).toBe(true);
     expect(boxesOverlap(captionTop, { x: 200, y: 140, width: 10, height: 10 }, 12)).toBe(false);
+  });
+});
+
+describe('pickNoteCorner', () => {
+  const margin = 24;
+  const size = { width: 280, height: 36 };
+  const viewport = { width: 1440, height: 900 };
+
+  function box(corner: NoteCorner): OverlayBox {
+    const top = corner.startsWith('top');
+    const left = corner.endsWith('left');
+    return {
+      x: left ? margin : viewport.width - margin - size.width,
+      y: top ? margin : viewport.height - margin - size.height,
+      ...size,
+    };
+  }
+
+  const boxes: Record<NoteCorner, OverlayBox> = {
+    'top-left': box('top-left'),
+    'top-right': box('top-right'),
+    'bottom-left': box('bottom-left'),
+    'bottom-right': box('bottom-right'),
+  };
+
+  it('sits opposite a top caption, on the left', () => {
+    expect(preferredNoteCorner('top')).toBe('bottom-left');
+    expect(pickNoteCorner('bottom-left', boxes, [])).toBe('bottom-left');
+  });
+
+  it('moves along the same edge when a spotlight covers that corner', () => {
+    const spotlight = { x: 10, y: 820, width: 200, height: 70 };
+    expect(pickNoteCorner('bottom-left', boxes, [spotlight])).toBe('bottom-right');
+  });
+
+  it('stays put when every corner is taken', () => {
+    const huge = { x: 0, y: 0, width: 1440, height: 900 };
+    expect(pickNoteCorner('bottom-left', boxes, [huge])).toBe('bottom-left');
   });
 });

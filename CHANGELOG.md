@@ -5,6 +5,23 @@ Notable changes, newest first. This project follows [semantic versioning](https:
 
 ## Unreleased
 
+## 0.3.2 — 2026-10-11
+
+`check` no longer treats `about:blank` under the opening title card as the wrong application. A run
+that never leaves that page still is. A caption that paints on a second line is reported as
+`caption-wraps`.
+
+`say()` inside a `step()` keeps that step's number. Pass `{ badge: '' }` to drop it. A standing
+`note()` moves to another corner when a spotlight would cover it.
+
+`webServer: false` means the scenario starts and stops the application. Doctor warns if the address
+is down, and does not fail. `init --no-agent` writes `agentGuide: false`, so doctor stays quiet
+about `AGENTS.md`. The gitignore block names the Playwright reason once, above both paths.
+
+A gif of 8 MB or more says to look at `video.gifWidth` and `video.gifFps`.
+
+## 0.3.1 — 2026-09-21
+
 The overlay init script no longer throws when Playwright runs it before `<html>` exists. The opening
 cover still paints as soon as that element appears, so a deferred script cannot film the application
 first.

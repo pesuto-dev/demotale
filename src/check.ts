@@ -62,6 +62,11 @@ export interface CheckStep {
   text: string;
   /** The step number, for a numbered step. */
   badge?: string;
+  /**
+   * How many lines the caption painted. More than one means the second line covers the page
+   * under the subtitle. Absent when this step has no caption, or the dry run could not measure it.
+   */
+  captionLines?: number;
   /** Milliseconds since the scenario started. A dry run's clock, not the recording's. */
   atMs: number;
   frames: CheckFrame[];
@@ -167,14 +172,27 @@ export function looksLikeLogin(url: string): boolean {
 }
 
 /**
- * Whether the first thing filmed came from somewhere other than the address that was configured.
+ * The empty document under the opening cover, before the first `page.goto`.
  *
- * Both ways this happens end the same: you are looking at a recording of the wrong thing. Either the
- * port holds a different application, or the application bounced the browser to a login. The data to
- * notice it was already in the report; a reader should not have to compare two URLs by eye.
+ * A title card is filmed there on purpose: the agent guide opens on `card()`, then navigates.
+ * Treating that blank page as the application is how every guide-shaped scenario came back red.
+ */
+export function isBlankDocument(url: string): boolean {
+  return url === 'about:blank' || url.startsWith('about:blank?') || url.startsWith('about:blank#');
+}
+
+/**
+ * Whether the first real page came from somewhere other than the address that was configured.
+ *
+ * `about:blank` before the first navigation does not count. A run that never leaves it still does:
+ * nothing was filmed. Both other ways this happens end the same: you are looking at a recording of
+ * the wrong thing. Either the port holds a different application, or the application bounced the
+ * browser to a login. The data to notice it was already in the report; a reader should not have to
+ * compare two URLs by eye.
  */
 export function wrongOrigin(report: CheckReport): PageSeen | undefined {
-  const first = report.pages[0];
+  const placed = report.pages.filter((page) => !isBlankDocument(page.url));
+  const first = placed[0] ?? report.pages[0];
   if (first === undefined) return undefined;
   try {
     const wanted = new URL(report.baseUrl).origin;
@@ -182,6 +200,11 @@ export function wrongOrigin(report: CheckReport): PageSeen | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** Captions that painted on more than one line. The second line covers the page underneath. */
+export function wrappedCaptions(report: CheckReport): CheckStep[] {
+  return report.steps.filter((step) => (step.captionLines ?? 1) > 1);
 }
 
 /**
@@ -345,7 +368,9 @@ export function formatReport(report: CheckReport, frameDir: string): string[] {
   // application with routes, where every demo that clicks anything films a second path, so the
   // signal fired on every run. A warning you always get teaches you to ignore warnings. A first
   // page from the wrong origin is `WRONG` below; this catches the hop that happens later.
-  if (origins(report.pages).length > 1) {
+  // about:blank under the opening card is left out, or every title card would count as a move.
+  const placed = report.pages.filter((page) => !isBlankDocument(page.url));
+  if (origins(placed).length > 1) {
     lines.push(
       '  moved    frames came from more than one origin. Check that each is the one you meant.',
     );
@@ -377,6 +402,12 @@ export function formatReport(report: CheckReport, frameDir: string): string[] {
       lines.push(
         `        slow: ${step.warning.locator} appeared after ` +
           `${seconds(step.warning.appearedAfterMs ?? 0)}`,
+      );
+    }
+    if ((step.captionLines ?? 1) > 1) {
+      lines.push(
+        `        wraps: ${String(step.captionLines)} lines, so the second line covers the page. ` +
+          'Shorten the sentence.',
       );
     }
   }

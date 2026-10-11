@@ -9,6 +9,7 @@ import {
   parseAriaSnapshot,
   rank,
   stripAnsi,
+  wrappedCaptions,
   wrongOrigin,
   type Candidate,
   type CheckReport,
@@ -94,6 +95,29 @@ describe('wrongOrigin', () => {
 
   it('says nothing when nothing was filmed at all', () => {
     expect(wrongOrigin(filming([]))).toBeUndefined();
+  });
+
+  it('ignores about:blank under the opening title card', () => {
+    const report = filming([
+      { url: 'about:blank', title: '', atStep: 0 },
+      { url: 'http://localhost:4173/', title: 'Repro', atStep: 1 },
+    ]);
+    expect(wrongOrigin(report)).toBeUndefined();
+    expect(formatReport(report, 'frames').join('\n')).not.toContain('WRONG');
+    expect(formatReport(report, 'frames').join('\n')).not.toContain('moved');
+  });
+
+  it('still names a run that never leaves about:blank', () => {
+    const report = filming([{ url: 'about:blank', title: '', atStep: 0 }]);
+    expect(wrongOrigin(report)?.url).toBe('about:blank');
+  });
+
+  it('names the first real page when that one is the wrong application', () => {
+    const report = filming([
+      { url: 'about:blank', title: '', atStep: 0 },
+      { url: 'http://localhost:3000/', title: 'Other', atStep: 1 },
+    ]);
+    expect(wrongOrigin(report)?.title).toBe('Other');
   });
 });
 
@@ -260,6 +284,25 @@ describe('formatReport', () => {
       'x',
     ).join('\n');
     expect(hopped).toContain('moved');
+  });
+
+  it('names a caption that wrapped onto a second line', () => {
+    const wrapped = {
+      ...report,
+      ok: true,
+      steps: [
+        {
+          kind: 'step' as const,
+          text: 'A sentence long enough to wrap under the default viewport and cover the heading.',
+          badge: '1',
+          captionLines: 2,
+          atMs: 0,
+          frames: [],
+        },
+      ],
+    };
+    expect(wrappedCaptions(wrapped)).toHaveLength(1);
+    expect(formatReport(wrapped, 'frames').join('\n')).toContain('wraps: 2 lines');
   });
 
   it('says so plainly when nothing failed', () => {

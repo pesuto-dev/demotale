@@ -231,7 +231,7 @@ function configChecks(root: string, config: ResolvedConfig, file: string | undef
 /** Whether Playwright has been told to start the app itself and refuse to reuse a running one. */
 function startsItsOwnServer(config: ResolvedConfig): boolean {
   const { webServer } = config;
-  if (webServer === undefined) return false;
+  if (webServer === undefined || webServer === false) return false;
   const servers = Array.isArray(webServer) ? webServer : [webServer];
   return servers.some((server) => server.reuseExistingServer === false);
 }
@@ -246,6 +246,15 @@ function startsItsOwnServer(config: ResolvedConfig): boolean {
 function webServerCheck(root: string, config: ResolvedConfig): Check[] {
   const { webServer } = config;
   if (webServer === undefined) return [];
+  if (webServer === false) {
+    return [
+      {
+        status: 'ok',
+        label: 'webServer',
+        detail: 'the scenario starts and stops the application',
+      },
+    ];
+  }
 
   const servers = Array.isArray(webServer) ? webServer : [webServer];
   const file = path.join(root, 'package.json');
@@ -394,7 +403,7 @@ const INIT_WROTE = {
 function stillAsInitWroteIt(config: ResolvedConfig): boolean {
   if (config.baseUrl !== INIT_WROTE.baseUrl) return false;
   const { webServer } = config;
-  if (webServer === undefined) return false;
+  if (webServer === undefined || webServer === false) return false;
   const servers = Array.isArray(webServer) ? webServer : [webServer];
   // More than one server means somebody has been in here.
   const [server] = servers;
@@ -514,6 +523,16 @@ async function baseUrlCheck(config: ResolvedConfig, hasSession: boolean): Promis
       detail: `${config.baseUrl} answers ${String(response.status)}`,
     };
   } catch {
+    if (config.webServer === false) {
+      return {
+        status: 'warn',
+        label: 'baseUrl',
+        detail:
+          `${config.baseUrl} does not answer. webServer is false, so the scenario is expected to ` +
+          'start the application itself. A recording will not start it for you.',
+      };
+    }
+
     return config.webServer === undefined
       ? {
           status: 'problem',
@@ -537,11 +556,18 @@ async function baseUrlCheck(config: ResolvedConfig, hasSession: boolean): Promis
   }
 }
 
-function agentGuideCheck(root: string): Check {
+function agentGuideCheck(root: string, config: ResolvedConfig): Check {
   const file = path.join(root, 'AGENTS.md');
   const existing = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
   if (existing.includes(AGENTS_MARKER)) {
     return { status: 'ok', label: 'agent', detail: 'AGENTS.md points at demotale agent-guide' };
+  }
+  if (!config.agentGuide) {
+    return {
+      status: 'ok',
+      label: 'agent',
+      detail: 'AGENTS.md was skipped on purpose (agentGuide: false)',
+    };
   }
   return {
     status: 'warn',
@@ -579,7 +605,7 @@ export async function collectChecks(
     config = loaded.config;
     checks.push(...configChecks(root, loaded.config, loaded.file));
     if (loaded.file !== undefined) {
-      checks.push(agentGuideCheck(root), ciWorkflowCheck(root));
+      checks.push(agentGuideCheck(root, loaded.config), ciWorkflowCheck(root));
     }
 
     const server = webServerCheck(root, loaded.config);

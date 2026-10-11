@@ -123,5 +123,8 @@ describe('init agent block', () => {
   it('skips AGENTS.md when asked', () => {
     init(root, { agent: false });
     expect(fs.existsSync(path.join(root, 'AGENTS.md'))).toBe(false);
+    expect(fs.readFileSync(path.join(root, 'demotale.config.ts'), 'utf8')).toContain(
+      'agentGuide: false',
+    );
   });
 });
