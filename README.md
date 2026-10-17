@@ -10,6 +10,8 @@
 
 # demotale
 
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 Product demos that don't go stale.
 
 Write the walkthrough once. Ship a video for the pitch, a gif for the README, or pictures for the
@@ -221,7 +223,7 @@ no upload. Everything happens on your machine.
 
 ## License
 
-Apache-2.0 © Ben van den Berge. See [NOTICE](NOTICE) for third-party notices. A bundled FFmpeg
+[Apache-2.0](LICENSE) © Ben van den Berge. See [NOTICE](NOTICE) for third-party notices. A bundled FFmpeg
 binary from `ffmpeg-static` (if you install that yourself) is GPL.
 
 The Pesuto name and logo are not covered by the license.
